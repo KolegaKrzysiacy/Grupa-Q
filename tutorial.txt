@@ -19,8 +19,11 @@ schemat.sql
 fill.py
 
 
-fill.py jest do wypełnienia wygenerowanymi danymi ale na razie nic nie robi
+fill.py jest do wypełnienia żeby generował dane ale na razie nic nie robi
 
+
+
+6.1 Jak stworzycie serwer SQL to on będzie działał cały czas w tle, bo deafult jest żeby włączał się automatycznie po startup, można to zmienić albo go wyłączyć i włączyć w Services/Usługi, trzeba tylko znaleźć jego nazwę, mój miał deafult MySQL80
 
 
 

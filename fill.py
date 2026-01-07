@@ -10,11 +10,9 @@ con = mysql.connector.connect(
 mycursor = con.cursor()
 
 
-print("tu generowanie")
+print("na razie nic to nie robi, tu będzie generowanie danych")
 
 
-
-mycursor.fetchall()
 mycursor.close()
 con.close()
 
