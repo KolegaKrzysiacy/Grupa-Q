@@ -1,4 +1,14 @@
 import random
+import mysql.connector
+
+con = mysql.connector.connect(
+  host="localhost",
+  user="admin",
+  password="admin",
+  database="grupaq"
+)
+
+mycursor = con.cursor()
 
 random.seed(42)
 
@@ -23,7 +33,7 @@ for i in range(100):
     data_urodzenia = random.randrange(1514761200, 1735686000)
     czas_kariery = int(bida_rozklad_normalny(1.5, 3)*SEKUNDY_W_ROKU)
     data_zakonczenia_aktywnosci = data_urodzenia + czas_kariery
-    chomiki.append((imie, rasa, data_urodzenia, data_zakonczenia_aktywnosci))
+    chomiki.append((imie, rasa, data_urodzenia, data_zakonczenia_aktywnosci)) 
 
 # teraz 50 zawodów
 # - data rozpoczęcia: od 2021 do 2025
@@ -78,5 +88,48 @@ for id_rozgrywki, (id_zawodow, data_rozgrywki) in enumerate(rozgrywki):
 # - ras chomików
 # - sponsorów i finansowania
 
-for i in chomiki: # chomiki / zawody / rozgrywki / uczestnictwo, można testować sobie
-    print(i)
+#for i in rozgrywki: # chomiki / zawody / rozgrywki / uczestnictwo, można testować sobie
+#    print(i)
+
+
+
+#to poniżej tylko tymczasowo 
+
+wlas = []
+for i in range(50):
+    wlas.append(("osoba "+ str(i), None))
+mycursor.executemany("INSERT INTO wlasciciele (pelne_imie, krotkie_imie) VALUES (%s, %s)", wlas)
+con.commit()
+
+for i, j in enumerate(chomiki):  #dodane id właściciela żeby przykład wrzucić 
+    x = list(j)
+    x.append(random.randint(0,50))
+    chomiki[i] = tuple(x) 
+#print(chomiki)
+mycursor.executemany("INSERT INTO chomiki (imie, rasa, data_urodzenia, data_zakonczenia_aktywnosci, id_wlasciciela) VALUES (%s, %s, DATE(FROM_UNIXTIME(%s)), DATE(FROM_UNIXTIME(%s)), %s)", chomiki)
+con.commit()
+
+
+
+
+
+
+
+"""
+tables = [chomiki, zawody, rozgrywki, uczestnictwo]
+databases = ["chomiki", "zawody", "rozgrywki", "uczestnictwo"]
+variables = ["(imie, rasa, data_urodzenia, data_zakonczenia_aktywnosci)", "(data_rozpoczecia, czas_trwania, data_zakonczenia)", "(id_rozgrywki, data_rozgrywki)", "(id_rozgrywki, id_chomika, wynik)"]
+lenghts = [5, 4, 4, 3]
+def fill(table, database, variable, lenght):
+    sql = "INSERT INTO " + database + " " + variable + " VALUES (%s" + ", %s" * (lenght - 1) + ")"
+    mycursor.executemany(sql, table)
+
+for i in range(len(tables)):
+    fill(tables[i], databases[i], variables[i], lenghts[i])
+
+
+"""
+
+
+mycursor.close()
+con.close()

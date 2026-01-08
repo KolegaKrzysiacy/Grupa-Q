@@ -1,18 +1,18 @@
 
 CREATE TABLE chomiki
 (
-  id_chomika     SMALLINT    NOT NULL,
-  imie           VARCHAR(50) NULL    ,
-  id_wlasciciela SMALLINT    NOT NULL COMMENT 'może być null - wolny chomik',
-  data_urodzenia DATE        NULL    ,
-  waga           DECIMAL     NULL     COMMENT 'waga w gramach',
-  rasa           VARCHAR(50) NULL     COMMENT 'kilka możliwych wartości',
+  id_chomika                  SMALLINT    NOT NULL AUTO_INCREMENT,
+  imie                        VARCHAR(50) NULL    ,
+  id_wlasciciela              SMALLINT    NULL     COMMENT 'może być null - wolny chomik',
+  data_urodzenia              DATE        NULL    ,
+  rasa                        VARCHAR(50) NULL     COMMENT 'kilka możliwych wartości',
+  data_zakonczenia_aktywnosci DATE        NULL     COMMENT 'może żyje tylko emerytowany, jak null to dalej biega',
   PRIMARY KEY (id_chomika)
 );
 
 CREATE TABLE finansowanie
 (
-  id_wplaty    SMALLINT     NOT NULL,
+  id_wplaty    SMALLINT     NOT NULL AUTO_INCREMENT,
   typ_zrodla   VARCHAR(50)  NULL     COMMENT 'kilka możliwych wartości',
   nazwa_zrodla VARCHAR(100) NULL    ,
   id_firmy     SMALLINT     NULL     COMMENT 'może być null',
@@ -23,7 +23,7 @@ CREATE TABLE finansowanie
 
 CREATE TABLE konkurencje
 (
-  id_konkurencji    SMALLINT    NOT NULL,
+  id_konkurencji    SMALLINT    NOT NULL AUTO_INCREMENT,
   nazwa_konkurencji VARCHAR(50) NULL    ,
   kategoria         VARCHAR(15) NOT NULL COMMENT 'naturalna albo formuła Ch',
   odleglosc         SMALLINT    NULL     COMMENT 'odleglosc wyscigu w m',
@@ -34,7 +34,7 @@ CREATE TABLE konkurencje
 
 CREATE TABLE kontrole_antydopingowe
 (
-  id_kontroli   SMALLINT  NOT NULL,
+  id_kontroli   SMALLINT  NOT NULL AUTO_INCREMENT,
   id_substancji SMALLINT  NOT NULL COMMENT 'sprawdzana substancja',
   id_chomika    SMALLINT  NOT NULL,
   id_zawodow    SMALLINT  NOT NULL COMMENT 'na jakich zawodach',
@@ -45,7 +45,7 @@ CREATE TABLE kontrole_antydopingowe
 
 CREATE TABLE pracownicy
 (
-  id_pracownika       SMALLINT     NOT NULL,
+  id_pracownika       SMALLINT     NOT NULL AUTO_INCREMENT,
   pelne_imie          VARCHAR(100) NULL     COMMENT 'wszystkie imiona i nazwiska',
   krotkie_imie        VARCHAR(50)  NULL     COMMENT 'pierwsze imie',
   stanowisko          VARCHAR(100) NULL     COMMENT 'nazwa stanowiska, kilka możliwych wartości',
@@ -57,7 +57,7 @@ CREATE TABLE pracownicy
 
 CREATE TABLE rozgrywki
 (
-  id_rozgrywki   SMALLINT  NOT NULL,
+  id_rozgrywki   SMALLINT  NOT NULL AUTO_INCREMENT,
   id_zawodow     SMALLINT  NOT NULL,
   id_konkurencji SMALLINT  NOT NULL,
   data_rozgrywki TIMESTAMP NULL    ,
@@ -67,7 +67,7 @@ CREATE TABLE rozgrywki
 
 CREATE TABLE sponsorzy
 (
-  id_firmy               SMALLINT     NOT NULL,
+  id_firmy               SMALLINT     NOT NULL AUTO_INCREMENT,
   nazwa_firmy            VARCHAR(100) NULL    ,
   oferta                 VARCHAR(255) NULL     COMMENT '"co oferują"',
   dane_kontaktowe        VARCHAR(255) NULL     COMMENT 'do reprezentanta firmy',
@@ -78,7 +78,7 @@ CREATE TABLE sponsorzy
 
 CREATE TABLE substancje
 (
-  id_substancji    SMALLINT     NOT NULL,
+  id_substancji    SMALLINT     NOT NULL AUTO_INCREMENT,
   nazwa_substancji VARCHAR(100) NULL    ,
   czy_zakazana     SMALLINT     NULL     DEFAULT 0 COMMENT '0 albo 1',
   PRIMARY KEY (id_substancji)
@@ -86,16 +86,26 @@ CREATE TABLE substancje
 
 CREATE TABLE uczestnictwo
 (
-  id_wyniku    SMALLINT NOT NULL,
-  id_chomika   SMALLINT NOT NULL,
-  id_rozgrywki SMALLINT NOT NULL,
-  wynik        DECIMAL  NULL     COMMENT 'czas biegu nwm',
-  PRIMARY KEY (id_wyniku)
+  id_uczestnictwa SMALLINT NOT NULL AUTO_INCREMENT,
+  id_chomika      SMALLINT NOT NULL,
+  id_rozgrywki    SMALLINT NOT NULL,
+  wynik           DECIMAL  NULL     COMMENT 'czas biegu nwm',
+  PRIMARY KEY (id_uczestnictwa)
 ) COMMENT 'uczestnictwo w rozgrywkach';
+
+CREATE TABLE wazenie
+(
+  id_wazenia   SMALLINT  NOT NULL AUTO_INCREMENT,
+  id_chomika   SMALLINT  NOT NULL,
+  id_zawodow   SMALLINT  NOT NULL,
+  waga         DECIMAL   NOT NULL COMMENT 'waga w gramach',
+  data_wazenia TIMESTAMP NULL    ,
+  PRIMARY KEY (id_wazenia)
+) COMMENT 'wazenie chomików';
 
 CREATE TABLE wlasciciele
 (
-  id_wlasciciela SMALLINT     NOT NULL,
+  id_wlasciciela SMALLINT     NOT NULL AUTO_INCREMENT,
   pelne_imie     VARCHAR(100) NULL     COMMENT 'wszystkie imiona i nazwiska',
   krotkie_imie   VARCHAR(50)  NULL     COMMENT 'pierwsze imie',
   PRIMARY KEY (id_wlasciciela)
@@ -103,11 +113,11 @@ CREATE TABLE wlasciciele
 
 CREATE TABLE zawody
 (
-  id_zawodow     SMALLINT  NOT NULL,
-  rozpoczecie    TIMESTAMP NULL    ,
-  zakonczenie    TIMESTAMP NULL    ,
-  glowny_sponsor SMALLINT  NULL     COMMENT 'id firmy',
-  koordynator    SMALLINT  NULL     COMMENT 'id pracownika',
+  id_zawodow       SMALLINT  NOT NULL AUTO_INCREMENT,
+  data_rozpoczecia TIMESTAMP NULL    ,
+  data_zakonczenia TIMESTAMP NULL    ,
+  glowny_sponsor   SMALLINT  NULL     COMMENT 'id firmy',
+  koordynator      SMALLINT  NULL     COMMENT 'id pracownika',
   PRIMARY KEY (id_zawodow)
 );
 
@@ -170,3 +180,13 @@ ALTER TABLE rozgrywki
   ADD CONSTRAINT FK_pracownicy_TO_rozgrywki
     FOREIGN KEY (sedzia)
     REFERENCES pracownicy (id_pracownika);
+
+ALTER TABLE wazenie
+  ADD CONSTRAINT FK_chomiki_TO_wazenie
+    FOREIGN KEY (id_chomika)
+    REFERENCES chomiki (id_chomika);
+
+ALTER TABLE wazenie
+  ADD CONSTRAINT FK_zawody_TO_wazenie
+    FOREIGN KEY (id_zawodow)
+    REFERENCES zawody (id_zawodow);
