@@ -93,28 +93,10 @@ for id_rozgrywki, (id_zawodow, data_rozgrywki) in enumerate(rozgrywki):
 
 
 
-#to poniżej tylko tymczasowo 
-
-wlas = []
-for i in range(50):
-    wlas.append(("osoba "+ str(i), None))
-mycursor.executemany("INSERT INTO wlasciciele (pelne_imie, krotkie_imie) VALUES (%s, %s)", wlas)
-con.commit()
-
-for i, j in enumerate(chomiki):  #dodane id właściciela żeby przykład wrzucić 
-    x = list(j)
-    x.append(random.randint(0,50))
-    chomiki[i] = tuple(x) 
-#print(chomiki)
-mycursor.executemany("INSERT INTO chomiki (imie, rasa, data_urodzenia, data_zakonczenia_aktywnosci, id_wlasciciela) VALUES (%s, %s, DATE(FROM_UNIXTIME(%s)), DATE(FROM_UNIXTIME(%s)), %s)", chomiki)
-con.commit()
 
 
 
-
-
-
-
+#to zostaw na razie
 """
 tables = [chomiki, zawody, rozgrywki, uczestnictwo]
 databases = ["chomiki", "zawody", "rozgrywki", "uczestnictwo"]

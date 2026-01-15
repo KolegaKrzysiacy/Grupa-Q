@@ -16,12 +16,11 @@ pip install mysql-connector-python
 5.2. Uruchomić w VS po kolei
 create.py
 schemat.sql
-fill.py
+additional.py
+generujemy.py
 
-
-fill.py jest do wypełnienia żeby generował dane ale na razie nic nie robi
-
-
+5.3 Update
+del.py - jak chcesz usunąć baze jak masz starą wersje, potem musisz od nowa 5.2 żeby stworzyć baze i wgrać nowe dane
 
 6.1 Jak stworzycie serwer SQL to on będzie działał cały czas w tle, bo deafult jest żeby włączał się automatycznie po startup, można to zmienić albo go wyłączyć i włączyć w Services/Usługi, trzeba tylko znaleźć jego nazwę, mój miał deafult MySQL80
 
