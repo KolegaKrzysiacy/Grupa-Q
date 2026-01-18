@@ -51,13 +51,13 @@ for i in range(100):
     imie = f"Chomik {i}"
     rasa = random.choice(rasy)
     data_urodzenia = random.randrange(1514761200, 1735686000)
-    # Czy data dołączenia potrzebna?
+    # Czy data dołączenia potrzebna? --- Wydaje mi się że raczej tak, żeby wiedzieć ile on biega i bierze ogólnie udział w zawodach, bo nie biegają od momentu urodzenia
     czas_kariery = int(bida_rozklad_normalny(1.5, 3)*SEKUNDY_W_ROKU)
     data_zakonczenia_aktywnosci = data_urodzenia + czas_kariery
     chomiki.append((imie, rasa, data_urodzenia, data_zakonczenia_aktywnosci))
 
 # teraz stanowiska pracownikow (ręcznie)
-# Czy powinni wszyscy na jednym stanowisku dostawać tyle samo?
+# Czy powinni wszyscy na jednym stanowisku dostawać tyle samo? --- Wydaje mi się żę nie ma sensu zbyt komplikować, jak coś to moża dodać kolumne premia czy coś w wtedy wynagrodzenie to suma
 stanowiska = [("Koordynator zawodów", 6100), ("Sędzia", 5900), ("Sprzątacz", 4900)]
 id_stanowisk = {}
 for i, (stanowisko, _) in enumerate(stanowiska):
@@ -103,14 +103,14 @@ for _ in range(50):
 
 # przeszkody, podłoża, kategorie - recznie
 kategorie = ["naturalna", "formuła Ch"]
-przeszkody = ["Przeszkoda 1", "Przeszkoda 2"] # Pls wymyśl coś nie mam totalnie pomysłów
+przeszkody = ["Labirynt", "Rury", "Klocki", "Podesty", "Ścianki"] # Pls wymyśl coś nie mam totalnie pomysłów --- xDDDDDDDDD, chyba git tyle, jak coś to usuń albo dodaj
 podloza = ["Trociny", "Trawa", "Ziemia", "Piasek", "Woda"]
 
 # konkurencje - 20 konkurencji losowych
 # - nazwa konkurencji: "Konkurencja i"
 # - id kategorii
 # - id podloza
-# - id przeszkody (Czy nie powinno móc być więcej niż jednej?)
+# - id przeszkody (Czy nie powinno móc być więcej niż jednej?) --- właśnie w sumie to tak lepiej by było chyba
 # - długość trasy - od 10 do 100 metrów
 konkurencje = []
 for i in range(20):
@@ -228,7 +228,7 @@ for id_zawodow, (data_rozpoczecia, data_zakonczenia, liczba_widzow, koordynator)
 
 # koszty zawodów - od 5 do 10 dla każdych zawodów
 # - id_zawodow
-# - nazwa kosztu - "Koszt" (Czy tabela rodzaje kosztów?)
+# - nazwa kosztu - "Koszt" (Czy tabela rodzaje kosztów?) ---
 # - kwota - od 100 do 10000 złotych (rozkład wykładniczy)
 koszty_zawodow = []
 for id_zawodow, (data_rozpoczecia, data_zakonczenia, liczba_widzow, koordynator) in enumerate(zawody):
@@ -248,11 +248,12 @@ for id_zawodow, (data_rozpoczecia, data_zakonczenia, liczba_widzow, koordynator)
 
 
 #to zostaw na razie
+#powinno działać jak wszystkie tabele będą wypełnione ale to się jeszcze potem sprawdzi
 """
-tables = [chomiki, zawody, rozgrywki, uczestnictwo]
-databases = ["chomiki", "zawody", "rozgrywki", "uczestnictwo"]
-variables = ["(imie, rasa, data_urodzenia, data_zakonczenia_aktywnosci)", "(data_rozpoczecia, czas_trwania, data_zakonczenia)", "(id_rozgrywki, data_rozgrywki)", "(id_rozgrywki, id_chomika, wynik)"]
-lenghts = [5, 4, 4, 3]
+tables = [producenci, modele, pojazdy, rasy, wlasciciele, chomiki, substancje, kontrola_substancji, kontrole_antydopingowe, sponsorzy, typy_zrodel_finansowania, stanowiska, pracownicy, zawody, rodzaje_kosztow, koszty_zawodow, finansowanie, rozgrywki, uczestnictwo, przeszkody, podloza, kategorie, konkurencje, konkurencje_przeszkody, wazenie]
+databases = ["producenci", "modele", "pojazdy", "rasy", "wlasciciele", "chomiki", "substancje", "kontrola_substancji", "kontrole_antydopingowe", "sponsorzy", "typy_zrodel_finansowania", "stanowiska", "pracownicy", "zawody", "rodzaje_kosztow", "koszty_zawodow", "finansowanie", "rozgrywki", "uczestnictwo", "przeszkody", "podloza", "kategorie", "konkurencje", "konkurencje_przeszkody", "wazenie"]
+variables = ["(nazwa_producenta)", "(nazwa_modelu, cena_modelu, id_producenta)", "(nazwa_pojazdu, id_modelu)", "(nazwa_rasy)", "(imie_wlasciciela, nazwisko_wlasciciela, numer_telefonu)", "(imie_chomika, id_wlasciciela, id_rasy, data_urodzenia, data_dolaczenia, data_odejscia)", "(nazwa_substancji)", "(id_kontroli, id_substancji, wynik_testu)", "(id_chomika, id_zawodow, data_kontroli)", "(nazwa_firmy, oferta, dane_kontaktowe, rozpoczecie_wspolpracy, zakonczenie_wspolpracy)", "(nazwa_typu)", "(nazwa_stanowiska, wyplata)", "(imie_pracownika, nazwisko_pracownika, id_stanowiska, data_zatrudnienia, data_zwolnienia, numer_telefonu)", "(data_rozpoczecia, data_zakonczenia, liczba_widzow, id_koordynatora)", "(nazwa_kosztu)", "(id_zawodow, id_kosztu, kwota)", "(id_zawodow, id_typu, id_firmy, data_wplaty, kwota)", "(id_zawodow, id_konkurencji, data_rozgrywki, id_sedzi)", "(id_chomika, id_rozgrywki, czas, miejsce, id_pojazdu)", "(rodzaj_przeszkody)", "(nazwa_podloza)", "(nazwa_kategorii)", "(nazwa_konkurencji, id_kategorii, id_podloza, dlugosc_trasy)", "(id_konkurencji, id_przeszkody)", "(id_chomika, id_zawodow, waga, data_wazenia)"]
+lenghts = [1, 3, 2, 1, 3, 6, 1, 3, 3, 5, 1, 2, 6, 4, 1, 3, 5, 4, 5, 1, 1, 1, 4, 2, 4]
 def fill(table, database, variable, lenght):
     sql = "INSERT INTO " + database + " " + variable + " VALUES (%s" + ", %s" * (lenght - 1) + ")"
     mycursor.executemany(sql, table)

@@ -6,7 +6,7 @@ CREATE TABLE chomiki
   id_wlasciciela  SMALLINT    NOT NULL,
   id_rasy         SMALLINT    NOT NULL,
   data_urodzenia  DATE        NOT NULL,
-  data_dolaczenia DATE        NOT NULL,
+  data_dolaczenia DATE        NOT NULL COMMENT 'czy na pewno potrzebna?',
   data_odejscia   DATE        NULL     COMMENT 'może żyje tylko emerytowany, jak null to dalej biega',
   PRIMARY KEY (id_chomika)
 );
@@ -38,13 +38,19 @@ CREATE TABLE konkurencje
   nazwa_konkurencji VARCHAR(50) NOT NULL,
   id_kategorii      SMALLINT    NOT NULL,
   id_podloza        SMALLINT    NOT NULL,
-  id_przeszkody     SMALLINT    NULL     COMMENT 'null=brak',
   dlugosc_trasy     SMALLINT    NULL     COMMENT 'odleglosc wyscigu w m',
   PRIMARY KEY (id_konkurencji)
 );
 
 ALTER TABLE konkurencje
   ADD CONSTRAINT UQ_nazwa_konkurencji UNIQUE (nazwa_konkurencji);
+
+CREATE TABLE konkurencje_przeszkody
+(
+  id_konkurencji SMALLINT NOT NULL,
+  id_przeszkody  SMALLINT NOT NULL COMMENT '1=rura, 2 itp',
+  PRIMARY KEY (id_konkurencji, id_przeszkody)
+) COMMENT 'pośrednia, żeby konkurencja mogła mieć wiele przeszkód i dalej było eknf';
 
 CREATE TABLE kontrola_substancji
 (
@@ -65,17 +71,18 @@ CREATE TABLE kontrole_antydopingowe
 
 CREATE TABLE koszty_zawodow
 (
-  id_kosztu    SMALLINT      NOT NULL AUTO_INCREMENT,
-  id_zawodow   SMALLINT      NOT NULL,
-  nazwa_kosztu VARCHAR(80)   NOT NULL COMMENT 'wynajem, nagrody itp',
-  kwota        DECIMAL(10,2) NOT NULL DEFAULT 0,
-  PRIMARY KEY (id_kosztu)
+  id_zawodow SMALLINT      NOT NULL,
+  id_kosztu  SMALLINT      NOT NULL,
+  kwota      DECIMAL(10,2) NOT NULL DEFAULT 0,
+  PRIMARY KEY (id_zawodow, id_kosztu)
 );
 
 CREATE TABLE modele
 (
-  id_model    SMALLINT      NOT NULL AUTO_INCREMENT,
-  cena_modelu DECIMAL(10,2) NOT NULL COMMENT 'cena w zł, żeby w analize wykorzystać',
+  id_model      SMALLINT      NOT NULL AUTO_INCREMENT,
+  nazwa_modelu  VARCHAR(30)   NOT NULL COMMENT 'DODAJ TYPY ITD',
+  cena_modelu   DECIMAL(10,2) NOT NULL COMMENT 'cena w zł, żeby w analize wykorzystać',
+  id_producenta SMALLINT      NOT NULL,
   PRIMARY KEY (id_model)
 );
 
@@ -93,7 +100,7 @@ CREATE TABLE pojazdy
 (
   id_pojazdu    SMALLINT    NOT NULL AUTO_INCREMENT,
   nazwa_pojazdu VARCHAR(30) NOT NULL COMMENT 'wybrana przez właściciela',
-  id_model      SMALLINT    NOT NULL,
+  id_modelu     SMALLINT    NOT NULL,
   PRIMARY KEY (id_pojazdu)
 );
 
@@ -115,6 +122,16 @@ CREATE TABLE pracownicy
 ALTER TABLE pracownicy
   ADD CONSTRAINT UQ_numer_telefonu UNIQUE (numer_telefonu);
 
+CREATE TABLE producenci
+(
+  id_producenta    SMALLINT    NOT NULL AUTO_INCREMENT,
+  nazwa_producenta VARCHAR(30) NOT NULL,
+  PRIMARY KEY (id_producenta)
+);
+
+ALTER TABLE producenci
+  ADD CONSTRAINT UQ_nazwa_producenta UNIQUE (nazwa_producenta);
+
 CREATE TABLE przeszkody
 (
   id_przeszkody     SMALLINT    NOT NULL AUTO_INCREMENT COMMENT '1=rura, 2 itp',
@@ -134,6 +151,13 @@ CREATE TABLE rasy
 
 ALTER TABLE rasy
   ADD CONSTRAINT UQ_nazwa_rasy UNIQUE (nazwa_rasy);
+
+CREATE TABLE rodzaje_kosztow
+(
+  id_kosztu    SMALLINT    NOT NULL AUTO_INCREMENT,
+  nazwa_kosztu VARCHAR(80) NOT NULL COMMENT 'wynajem, nagrody itp',
+  PRIMARY KEY (id_kosztu)
+);
 
 CREATE TABLE rozgrywki
 (
@@ -222,21 +246,13 @@ CREATE TABLE wlasciciele
 ALTER TABLE wlasciciele
   ADD CONSTRAINT UQ_numer_telefonu UNIQUE (numer_telefonu);
 
-CREATE TABLE wyniki_zawodow
-(
-  id_chomika        SMALLINT NOT NULL,
-  id_zawodow        SMALLINT NOT NULL,
-  miejsce_generalne SMALLINT NOT NULL,
-  PRIMARY KEY (id_chomika, id_zawodow)
-);
-
 CREATE TABLE zawody
 (
   id_zawodow       SMALLINT NOT NULL AUTO_INCREMENT,
   data_rozpoczecia DATE     NOT NULL,
   data_zakonczenia DATE     NOT NULL,
   liczba_widzow    INT      NOT NULL DEFAULT 0,
-  koordynator      SMALLINT NOT NULL COMMENT 'id pracownika',
+  id_koordynatora  SMALLINT NOT NULL COMMENT 'id pracownika',
   PRIMARY KEY (id_zawodow)
 );
 
@@ -282,7 +298,7 @@ ALTER TABLE uczestnictwo
 
 ALTER TABLE zawody
   ADD CONSTRAINT FK_pracownicy_TO_zawody
-    FOREIGN KEY (koordynator)
+    FOREIGN KEY (id_koordynatora)
     REFERENCES pracownicy (id_pracownika);
 
 ALTER TABLE rozgrywki
@@ -342,13 +358,8 @@ ALTER TABLE finansowanie
 
 ALTER TABLE pojazdy
   ADD CONSTRAINT FK_modele_TO_pojazdy
-    FOREIGN KEY (id_model)
+    FOREIGN KEY (id_modelu)
     REFERENCES modele (id_model);
-
-ALTER TABLE konkurencje
-  ADD CONSTRAINT FK_przeszkody_TO_konkurencje
-    FOREIGN KEY (id_przeszkody)
-    REFERENCES przeszkody (id_przeszkody);
 
 ALTER TABLE uczestnictwo
   ADD CONSTRAINT FK_pojazdy_TO_uczestnictwo
@@ -360,12 +371,22 @@ ALTER TABLE koszty_zawodow
     FOREIGN KEY (id_zawodow)
     REFERENCES zawody (id_zawodow);
 
-ALTER TABLE wyniki_zawodow
-  ADD CONSTRAINT FK_chomiki_TO_wyniki_zawodow
-    FOREIGN KEY (id_chomika)
-    REFERENCES chomiki (id_chomika);
+ALTER TABLE modele
+  ADD CONSTRAINT FK_producenci_TO_modele
+    FOREIGN KEY (id_producenta)
+    REFERENCES producenci (id_producenta);
 
-ALTER TABLE wyniki_zawodow
-  ADD CONSTRAINT FK_zawody_TO_wyniki_zawodow
-    FOREIGN KEY (id_zawodow)
-    REFERENCES zawody (id_zawodow);
+ALTER TABLE konkurencje_przeszkody
+  ADD CONSTRAINT FK_przeszkody_TO_konkurencje_przeszkody
+    FOREIGN KEY (id_przeszkody)
+    REFERENCES przeszkody (id_przeszkody);
+
+ALTER TABLE konkurencje_przeszkody
+  ADD CONSTRAINT FK_konkurencje_TO_konkurencje_przeszkody
+    FOREIGN KEY (id_konkurencji)
+    REFERENCES konkurencje (id_konkurencji);
+
+ALTER TABLE koszty_zawodow
+  ADD CONSTRAINT FK_rodzaje_kosztow_TO_koszty_zawodow
+    FOREIGN KEY (id_kosztu)
+    REFERENCES rodzaje_kosztow (id_kosztu);
