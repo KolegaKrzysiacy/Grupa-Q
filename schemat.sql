@@ -6,10 +6,20 @@ CREATE TABLE chomiki
   id_wlasciciela  SMALLINT    NOT NULL,
   id_rasy         SMALLINT    NOT NULL,
   data_urodzenia  DATE        NOT NULL,
-  data_dolaczenia DATE        NOT NULL COMMENT 'czy na pewno potrzebna?',
+  data_dolaczenia DATE        NOT NULL,
   data_odejscia   DATE        NULL     COMMENT 'może żyje tylko emerytowany, jak null to dalej biega',
   PRIMARY KEY (id_chomika)
 );
+
+CREATE TABLE czas_pojazdy
+(
+  id_uzywania       SMALLINT  NOT NULL AUTO_INCREMENT,
+  id_pojazdu        SMALLINT  NOT NULL,
+  id_chomika        SMALLINT  NOT NULL,
+  poczatek_uzywania TIMESTAMP NOT NULL,
+  koniec_uzywania   TIMESTAMP NULL    ,
+  PRIMARY KEY (id_uzywania)
+) COMMENT 'kiedy jaki chomik ma jaki pojazd';
 
 CREATE TABLE finansowanie
 (
@@ -17,7 +27,7 @@ CREATE TABLE finansowanie
   id_zawodow      SMALLINT      NOT NULL,
   id_typu         SMALLINT      NOT NULL,
   id_firmy        SMALLINT      NULL     COMMENT 'może być null',
-  data_wplaty     TIMESTAMP     NOT NULL,
+  data_wplaty     TIMESTAMP     NOT NULL COMMENT 'sprawdzić date współpracy',
   kwota           DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT 'kwota wpłaty w zł, nieujemna',
   PRIMARY KEY (id_finansowania)
 ) COMMENT 'źródła finansowania';
@@ -64,8 +74,7 @@ CREATE TABLE kontrole_antydopingowe
 (
   id_kontroli   SMALLINT  NOT NULL AUTO_INCREMENT,
   id_chomika    SMALLINT  NOT NULL,
-  id_zawodow    SMALLINT  NOT NULL COMMENT 'na jakich zawodach',
-  data_kontroli TIMESTAMP NOT NULL,
+  data_kontroli TIMESTAMP NOT NULL COMMENT 'sprawdzać czy pasuje',
   PRIMARY KEY (id_kontroli)
 );
 
@@ -112,9 +121,6 @@ CREATE TABLE pracownicy
   id_pracownika       SMALLINT     NOT NULL AUTO_INCREMENT,
   imie_pracownika     VARCHAR(100) NOT NULL COMMENT 'pierwsze imie',
   nazwisko_pracownika VARCHAR(50)  NOT NULL,
-  id_stanowiska       SMALLINT     NOT NULL,
-  data_zatrudnienia   DATE         NOT NULL,
-  data_zwolnienia     DATE         NULL    ,
   numer_telefonu      VARCHAR(15)  NULL    ,
   PRIMARY KEY (id_pracownika)
 ) COMMENT 'pracownicy federacji';
@@ -173,7 +179,6 @@ CREATE TABLE sponsorzy
 (
   id_firmy               SMALLINT     NOT NULL AUTO_INCREMENT,
   nazwa_firmy            VARCHAR(100) NOT NULL,
-  oferta                 VARCHAR(255) NULL     COMMENT '"co oferują"',
   dane_kontaktowe        VARCHAR(255) NULL     COMMENT 'do reprezentanta firmy',
   rozpoczecie_wspolpracy TIMESTAMP    NULL    ,
   zakonczenie_wspolpracy TIMESTAMP    NULL    ,
@@ -216,22 +221,19 @@ ALTER TABLE typy_zrodel_finansowania
 
 CREATE TABLE uczestnictwo
 (
-  id_chomika   SMALLINT     NOT NULL,
-  id_rozgrywki SMALLINT     NOT NULL,
-  czas         DECIMAL(6,2) NULL     COMMENT 'czas biegu nwm',
-  miejsce      SMALLINT     NULL     COMMENT 'miejsce w wyścigu',
-  id_pojazdu   SMALLINT     NULL     COMMENT 'może null bo nie uczestniczy w wyścigach aut, wtedy kategori musi być naturalna',
+  id_chomika   SMALLINT NOT NULL,
+  id_rozgrywki SMALLINT NOT NULL,
+  miejsce      SMALLINT NULL     COMMENT 'miejsce w wyścigu',
   PRIMARY KEY (id_chomika, id_rozgrywki)
 ) COMMENT 'uczestnictwo w rozgrywkach';
 
 CREATE TABLE wazenie
 (
-  id_wazenia   SMALLINT      NOT NULL AUTO_INCREMENT,
   id_chomika   SMALLINT      NOT NULL,
   id_zawodow   SMALLINT      NOT NULL,
   waga         DECIMAL(10,2) NOT NULL COMMENT 'waga w gramach',
   data_wazenia TIMESTAMP     NULL    ,
-  PRIMARY KEY (id_wazenia)
+  PRIMARY KEY (id_chomika, id_zawodow)
 ) COMMENT 'wazenie chomików';
 
 CREATE TABLE wlasciciele
@@ -240,11 +242,22 @@ CREATE TABLE wlasciciele
   imie_wlasciciela     VARCHAR(30) NOT NULL COMMENT 'pierwsze imie',
   nazwisko_wlasciciela VARCHAR(50) NOT NULL,
   numer_telefonu       VARCHAR(15) NULL    ,
+  zodiak_wlasciciela   VARCHAR(25) NOT NULL COMMENT 'miełem dodać coś wyróżniajcego się, to potem można w analiznie zadać pytanie jaki zodiak ma najlepsze chomiki czy coś',
   PRIMARY KEY (id_wlasciciela)
 ) COMMENT 'wlasciciele chomikow';
 
 ALTER TABLE wlasciciele
   ADD CONSTRAINT UQ_numer_telefonu UNIQUE (numer_telefonu);
+
+CREATE TABLE zatrudnienie
+(
+  id_zatrudnienia   SMALLINT NOT NULL AUTO_INCREMENT,
+  id_stanowiska     SMALLINT NOT NULL,
+  id_pracownika     SMALLINT NOT NULL,
+  data_zatrudnienia DATE     NOT NULL,
+  data_zwolnienia   DATE     NULL    ,
+  PRIMARY KEY (id_zatrudnienia)
+);
 
 CREATE TABLE zawody
 (
@@ -276,11 +289,6 @@ ALTER TABLE kontrole_antydopingowe
     FOREIGN KEY (id_chomika)
     REFERENCES chomiki (id_chomika);
 
-ALTER TABLE kontrole_antydopingowe
-  ADD CONSTRAINT FK_zawody_TO_kontrole_antydopingowe
-    FOREIGN KEY (id_zawodow)
-    REFERENCES zawody (id_zawodow);
-
 ALTER TABLE rozgrywki
   ADD CONSTRAINT FK_zawody_TO_rozgrywki
     FOREIGN KEY (id_zawodow)
@@ -290,11 +298,6 @@ ALTER TABLE rozgrywki
   ADD CONSTRAINT FK_konkurencje_TO_rozgrywki
     FOREIGN KEY (id_konkurencji)
     REFERENCES konkurencje (id_konkurencji);
-
-ALTER TABLE uczestnictwo
-  ADD CONSTRAINT FK_rozgrywki_TO_uczestnictwo
-    FOREIGN KEY (id_rozgrywki)
-    REFERENCES rozgrywki (id_rozgrywki);
 
 ALTER TABLE zawody
   ADD CONSTRAINT FK_pracownicy_TO_zawody
@@ -315,11 +318,6 @@ ALTER TABLE wazenie
   ADD CONSTRAINT FK_zawody_TO_wazenie
     FOREIGN KEY (id_zawodow)
     REFERENCES zawody (id_zawodow);
-
-ALTER TABLE pracownicy
-  ADD CONSTRAINT FK_stanowiska_TO_pracownicy
-    FOREIGN KEY (id_stanowiska)
-    REFERENCES stanowiska (id_stanowiska);
 
 ALTER TABLE chomiki
   ADD CONSTRAINT FK_rasy_TO_chomiki
@@ -361,11 +359,6 @@ ALTER TABLE pojazdy
     FOREIGN KEY (id_modelu)
     REFERENCES modele (id_model);
 
-ALTER TABLE uczestnictwo
-  ADD CONSTRAINT FK_pojazdy_TO_uczestnictwo
-    FOREIGN KEY (id_pojazdu)
-    REFERENCES pojazdy (id_pojazdu);
-
 ALTER TABLE koszty_zawodow
   ADD CONSTRAINT FK_zawody_TO_koszty_zawodow
     FOREIGN KEY (id_zawodow)
@@ -390,3 +383,28 @@ ALTER TABLE koszty_zawodow
   ADD CONSTRAINT FK_rodzaje_kosztow_TO_koszty_zawodow
     FOREIGN KEY (id_kosztu)
     REFERENCES rodzaje_kosztow (id_kosztu);
+
+ALTER TABLE uczestnictwo
+  ADD CONSTRAINT FK_rozgrywki_TO_uczestnictwo
+    FOREIGN KEY (id_rozgrywki)
+    REFERENCES rozgrywki (id_rozgrywki);
+
+ALTER TABLE zatrudnienie
+  ADD CONSTRAINT FK_stanowiska_TO_zatrudnienie
+    FOREIGN KEY (id_stanowiska)
+    REFERENCES stanowiska (id_stanowiska);
+
+ALTER TABLE zatrudnienie
+  ADD CONSTRAINT FK_pracownicy_TO_zatrudnienie
+    FOREIGN KEY (id_pracownika)
+    REFERENCES pracownicy (id_pracownika);
+
+ALTER TABLE czas_pojazdy
+  ADD CONSTRAINT FK_pojazdy_TO_czas_pojazdy
+    FOREIGN KEY (id_pojazdu)
+    REFERENCES pojazdy (id_pojazdu);
+
+ALTER TABLE czas_pojazdy
+  ADD CONSTRAINT FK_chomiki_TO_czas_pojazdy
+    FOREIGN KEY (id_chomika)
+    REFERENCES chomiki (id_chomika);
