@@ -13,6 +13,8 @@ import random
 # na razie nie ma:
 # - testów antydopingowych i substancji
 # - ważenia
+# - pojazdy własność
+# - sponsorowanie typy finansowań
 
 
 random.seed(42)
@@ -21,8 +23,25 @@ DNI_W_ROKU = 365.2425
 SEKUNDY_W_DNIU = 86400
 SEKUNDY_W_ROKU = DNI_W_ROKU*SEKUNDY_W_DNIU
 
+# TUTAJ LISTY TRZEBA ZROBIĆ PRAWIDZIWE
 IMIONA = ["Adam", "Bartek", "Paweł", "Janusz"]
 NAZWISKA = ["Nowak", "Kowalski", "Mikke"]
+IMIONA_CHOMIKOW = [f"Chomik {i}" for i in range(100)] # tyle ile imion tyle chomików
+NAZWY_FIRM = [f"Firma {i}" for i in range(20)] # tyle ile nazw tyle firm
+ZODIAKI = range(12) # Tutaj nazwy znaków zodiaku
+# rasy
+rasy = ["Syryjski", "Dżungarski", "Roborowskiego"]
+# przeszkody, podłoża, kategorie
+kategorie = ["naturalna", "formuła Ch"]
+przeszkody = ["Labirynt", "Rury", "Klocki", "Podesty", "Ścianki"]
+podloza = ["Trociny", "Trawa", "Ziemia", "Piasek", "Woda"]
+producenci = ["Producent monopolista"]
+modele = {
+    "Producent monopolista": ["Model Model", "ROZKURWIACZ 5000"]
+}
+# stanowiska pracownikow
+stanowiska = [("Koordynator zawodów", 6100), ("Sędzia", 5900), ("Sprzątacz", 4900)]
+
 
 def bida_rozklad_normalny(a, b): # tak sie serio robi ponoć (https://en.wikipedia.org/wiki/Irwin–Hall_distribution)
     return (random.uniform(a, b)+random.uniform(a, b)+random.uniform(a, b))/3
@@ -31,42 +50,38 @@ def bida_rozklad_normalny(a, b): # tak sie serio robi ponoć (https://en.wikiped
 # - imie
 # - nazwisko
 # - numer telefonu
+# - znak zodiaku (Na razie cyfry weź zmień na prawdziwe nazwy pls)
 wlasciciele = []
 for _ in range(20):
     imie = random.choice(IMIONA)
     nazwisko = random.choice(NAZWISKA)
     nr_tel = random.randint(100000000, 999999999)
-    wlasciciele.append((imie, nazwisko, nr_tel))
+    zodiak = random.choice
+    wlasciciele.append((imie, nazwisko, nr_tel, zodiak))
 
-# rasy chomików (ręcznie)
-rasy = ["Syryjski", "Dżungarski", "Roborowskiego"]
-
-# robimy 100 chomików:
-# - imie: na razie "Chomik i"
+# robimy tyle ile imion chomików:
+# - imie
 # - rasa
 # - data urodzenia: od 2018 do 2024 (rozkład jednostajny)
+# - data_dolaczenia: w wieku 0.5-1 lat (rozkład jednostajny)
 # - data zakończenia aktywności: data urodzenia plus od 1.5 do 3 lat (bida rozkład normalny)
 chomiki = []
 for i in range(100):
-    imie = f"Chomik {i}"
+    imie = IMIONA_CHOMIKOW[i]
     rasa = random.choice(rasy)
     data_urodzenia = random.randrange(1514761200, 1735686000)
-    # Czy data dołączenia potrzebna? --- Wydaje mi się że raczej tak, żeby wiedzieć ile on biega i bierze ogólnie udział w zawodach, bo nie biegają od momentu urodzenia
-    czas_kariery = int(bida_rozklad_normalny(1.5, 3)*SEKUNDY_W_ROKU)
-    data_zakonczenia_aktywnosci = data_urodzenia + czas_kariery
-    chomiki.append((imie, rasa, data_urodzenia, data_zakonczenia_aktywnosci))
+    data_dolaczenia = int(data_urodzenia + random.uniform(0.5, 1)*SEKUNDY_W_ROKU)
+    czas_kariery = int(bida_rozklad_normalny(1, 2.5)*SEKUNDY_W_ROKU)
+    data_zakonczenia_aktywnosci = data_dolaczenia + czas_kariery
+    chomiki.append((imie, rasa, data_urodzenia, data_dolaczenia, data_zakonczenia_aktywnosci))
 
-# teraz stanowiska pracownikow (ręcznie)
-# Czy powinni wszyscy na jednym stanowisku dostawać tyle samo? --- Wydaje mi się żę nie ma sensu zbyt komplikować, jak coś to moża dodać kolumne premia czy coś w wtedy wynagrodzenie to suma
-stanowiska = [("Koordynator zawodów", 6100), ("Sędzia", 5900), ("Sprzątacz", 4900)]
+# pomocniczy słownik
 id_stanowisk = {}
 for i, (stanowisko, _) in enumerate(stanowiska):
     id_stanowisk[stanowisko] = i
-koordynatorzy = [i for i, s in enumerate(stanowiska) if s[0] == "Koordynator zawodów"]
-sedziowie = [i for i, s in enumerate(stanowiska) if s[0] == "Sędzia"]
-sprzatacze = [i for i, s in enumerate(stanowiska) if s[0] == "Sprzątacz"]
 
-# pracownicy
+# pracownicy # Raczej nie będziemy robić pracowników zatrudnionych na sumach przedziałów, to że potrzeba do EKNFa nie znaczy że musimy to robić 
+# (ale trzeba odrobine przekształcić dane żeby wjebać do tabelek bo jest tak jak po staremu już nie mam czasu zmienić ale to łatwo będzie raczej)
 # - imie
 # - nazwisko
 # - id stanowiska
@@ -87,6 +102,11 @@ for stanowisko in chcemy_pracownikow:
         data_zwolnienia = None
     pracownicy.append((imie, nazwisko, id_stanowiska, data_zatrudnienia, data_zwolnienia, nr_tel))
 
+
+# pomocniczy słownik
+osoby_na_stanowisku = {stanowisko: 
+                       [i for i, (_, _, id_stanowiska, _, _, _) in enumerate(pracownicy) if id_stanowiska == id_stanowisk[stanowisko]] 
+                       for stanowisko, _ in stanowiska}
 # teraz 50 zawodów
 # - data rozpoczęcia: od 2021 do 2025
 # - data zakończenia: po od 3 do 7 dniach (rozkład jednostajny)
@@ -98,28 +118,31 @@ for _ in range(50):
     czas_trwania = random.randint(3, 7)
     data_zakonczenia = data_rozpoczecia + czas_trwania*SEKUNDY_W_DNIU
     liczba_widzow = random.randint(100, 1000)
-    id_koordynatora = random.randrange(0, len(koordynatorzy))
+    id_koordynatora = random.choice(osoby_na_stanowisku["Koordynator zawodów"])
     zawody.append((data_rozpoczecia, data_zakonczenia, liczba_widzow, id_koordynatora))
 
-# przeszkody, podłoża, kategorie - recznie
-kategorie = ["naturalna", "formuła Ch"]
-przeszkody = ["Labirynt", "Rury", "Klocki", "Podesty", "Ścianki"] # Pls wymyśl coś nie mam totalnie pomysłów --- xDDDDDDDDD, chyba git tyle, jak coś to usuń albo dodaj
-podloza = ["Trociny", "Trawa", "Ziemia", "Piasek", "Woda"]
+
+# 20 przeszkód
+konkurencje_przeszkody = []
+for _ in range(20):
+    liczba_przeszkod = random.randint(2, 5)
+    konkurencje_przeszkody.append(random.sample(przeszkody, k=liczba_przeszkod))
 
 # konkurencje - 20 konkurencji losowych
-# - nazwa konkurencji: "Konkurencja i"
+# - nazwa konkurencji
 # - id kategorii
 # - id podloza
-# - id przeszkody (Czy nie powinno móc być więcej niż jednej?) --- właśnie w sumie to tak lepiej by było chyba
+# - id przeszkod - odpowiednie id w konkurenje_przeszkody
 # - długość trasy - od 10 do 100 metrów
 konkurencje = []
 for i in range(20):
-    nazwa_konkurencji = f"Konkurencja {i}"
+    nazwa_konkurencji = f"Konkurencja {i}" # Do wyjebania chyba nazwa imo
     id_kategorii = random.randrange(0, len(kategorie))
     id_podloza = random.randrange(0, len(podloza))
-    id_przeszkody = random.randrange(0, len(przeszkody))
+    # przeszkody
+    id_przeszkod = i
     dlugosc_trasy = random.randint(10, 100)
-    konkurencje.append((nazwa_konkurencji, id_kategorii, id_podloza, id_przeszkody, dlugosc_trasy))
+    konkurencje.append((nazwa_konkurencji, id_kategorii, id_podloza, i, dlugosc_trasy))
 
 # generujemy rozgrywki dla każdych zawodów - od 10 do 50 na dzień dla każdych zawodów (rozkład normalny):
 # - id zawodów
@@ -134,29 +157,32 @@ for id_zawodow, (data_rozpoczecia, data_zakonczenia, liczba_widzow, koordynator)
         data_rozgrywki = data_rozpoczecia + dzien*SEKUNDY_W_DNIU
         for _ in range(liczba_rozgrywek):
             id_konkurencji = random.randrange(0, len(konkurencje))
-            id_sedzi = random.randrange(0, len(sedziowie))
+            id_sedzi = random.choice(osoby_na_stanowisku["Sędzia"])
             rozgrywki.append((id_zawodow, id_konkurencji, data_rozgrywki, id_sedzi))
 
-# modele pojazdów (10)
-# - producent: na razie "Producent monopolista" (Kurde no i tabela producenci teraz chyba, tego od chuja będzie, można wyjebać wsm żeby mniej roboty było)
-# - nazwa modelu: "Model i"
-# - cena modelu: od 100 do 1000zł
-modele = []
-for i in range(10):
-    producent = "Producent monopolista"
-    nazwa_modelu = f"Model {i}"
-    cena_modelu = random.randint(100, 1000)
-    modele.append((producent, nazwa_modelu, cena_modelu))
 
-# pojazdy (od 1*liczba właścicieli do 3*liczba właścicieli)
-# - nazwa pojazdu: "Pojazd i"
-# - id_modelu: losowy
-pojazdy = []
-liczba_pojazdow = random.randrange(len(wlasciciele))
-for i in range(liczba_pojazdow):
-    nazwa_pojazdu = f"Pojazd {i}"
-    id_modelu = random.randrange(0, len(modele))
-    pojazdy.append((nazwa_pojazdu, id_modelu))
+# POJAZDY NIEKOMPLEEEETNEEE
+
+# # modele pojazdów (10)
+# # - producent
+# # - nazwa modelu: "Model i"
+# # - cena modelu: od 100 do 1000zł
+# modele = []
+# for i in range(10):
+#     producent = random.choice(producenci)
+#     nazwa_modelu = random.choice(modele[producent])
+#     cena_modelu = random.randint(100, 1000)
+#     modele.append((producent, nazwa_modelu, cena_modelu))
+
+# # pojazdy (od 1*liczba właścicieli do 3*liczba właścicieli)
+# # - nazwa pojazdu: "Pojazd i"
+# # - id_modelu: losowy
+# pojazdy = []
+# liczba_pojazdow = random.randrange(len(wlasciciele))
+# for i in range(liczba_pojazdow):
+#     nazwa_pojazdu = f"Pojazd {i}"
+#     id_modelu = random.randrange(0, len(modele))
+#     pojazdy.append((nazwa_pojazdu, id_modelu))
 
 # uczestnictwo (i wyniki) - dla każdej rozgrywki w każdych zawodach
 # jak chomik jest w tabeli to uczestniczył a jak nie jest to nie uczestniczył
@@ -173,16 +199,16 @@ for id_rozgrywki, (id_zawodow, id_konkurencji, data_rozgrywki, id_sedzi) in enum
     id_kategorii = konkurencja[1] # to też
     kategoria = kategorie[id_kategorii]
     if kategoria == "formuła Ch":
-        id_pojazdu = random.randrange(0, len(pojazdy)) # UWAGA: TOTALNIE BEZ SENSU - TRZEBA ZASYMULOWAĆ WŁASNOŚĆ POJAZDÓW (ale na razie działa technicznie, potem się zajmę tym)
+        id_pojazdu = 0 # NA RAZIE WSZYSCY JEŻDŻĄ TYM SAMYM NIEISTNIEJĄCYM POJAZDEM PÓKI NIE MA ZROBIONYCH !!!
     else:
         id_pojazdu = None
 
-    # niech na razie około ćwierć możliwych chomików niech biegnie, potem trzeba to lepiej zrobić
-    # chcemy mieć przynajmniej 2 chomiki w wyścigu bo jeden chomik sam ze sobą się nie będzie ścigał
-    # najpierw musimy wiedziec jakie chomiki mogą biegnąć
-    ok_chomiki = [i for i, (_, _, data_urodzenia, data_zakonczenia_aktywnosci) in enumerate(chomiki)
+    # niech na razie około ćwierć możliwych chomików niech biegnie, potem trzeba to lepiej zrobić    #
+    # chcemy mieć przynajmniej 2 chomiki w wyścigu bo jeden chomik sam ze sobą się nie będzie ścigał # Komentarze pisane dawno ale dalej aktualne - 
+    # najpierw musimy wiedziec jakie chomiki mogą biegnąć                                            # - na razie git ale potem sie to lepiej zrobi
+    ok_chomiki = [i for i, (_, _, _, data_dolaczenia, data_zakonczenia_aktywnosci) in enumerate(chomiki)
         if data_zakonczenia <= data_zakonczenia_aktywnosci
-        and data_rozpoczecia >= data_urodzenia + 0.5*SEKUNDY_W_ROKU # nie zmuszajmy małych chomików do biegania !!!
+        and data_rozpoczecia >= data_dolaczenia
     ]
     ile_mamy_chomikow = len(ok_chomiki)
     ile_bierzemy_chomikow = max(2, round(bida_rozklad_normalny(ile_mamy_chomikow*0.125, ile_mamy_chomikow*0.375)))
@@ -192,56 +218,57 @@ for id_rozgrywki, (id_zawodow, id_konkurencji, data_rozgrywki, id_sedzi) in enum
         uczestnictwo.append((id_rozgrywki, id_chomika, wynik, id_pojazdu))
 
 
-# sponsorzy (20)
-# - nazwa firmy: na razie "Firma i"
-# - oferta: na razie "nic"
-# - dane kontaktowe: numer telefonu
-# - rozpoczęcie współpracy: od 2021 do 2025
-# - zakończenie współpracy: od rozpoczęcia do 2025 albo wcale
-sponsorzy = []
-for i in range(20):
-    nazwa_firmy = f"Firma {i}"
-    oferta = "nic"
-    dane_kontaktowe = random.randint(100000000, 999999999)
-    rozpoczecie_wspolpracy = random.randrange(1514761200, 1735686000)
-    if random.random() < 0.1: # 10% szans że już nie ma
-        zakonczenie_wspolpracy = random.randrange(rozpoczecie_wspolpracy, 1735686000)
-    else:
-        zakonczenie_wspolpracy = None
-    sponsorzy.append((nazwa_firmy, oferta, dane_kontaktowe, rozpoczecie_wspolpracy, zakonczenie_wspolpracy))
+# TEŻ NIEDOKOŃCZONE
 
-# TYPY ŹRÓDEŁ FINANSOWANIA - na razie nie
+# # sponsorzy (tyle ile nazw firm)
+# # - nazwa firmy
+# # - oferta: na razie "nic"
+# # - dane kontaktowe: numer telefonu
+# # - rozpoczęcie współpracy: od 2021 do 2025
+# # - zakończenie współpracy: od rozpoczęcia do 2025 albo wcale
+# sponsorzy = []
+# for i in range(len(NAZWY_FIRM)):
+#     nazwa_firmy = NAZWY_FIRM[i]
+#     oferta = "nic"
+#     dane_kontaktowe = random.randint(100000000, 999999999)
+#     rozpoczecie_wspolpracy = random.randrange(1514761200, 1735686000)
+#     if random.random() < 0.1: # 10% szans że już nie ma
+#         zakonczenie_wspolpracy = random.randrange(rozpoczecie_wspolpracy, 1735686000)
+#     else:
+#         zakonczenie_wspolpracy = None
+#     sponsorzy.append((nazwa_firmy, oferta, dane_kontaktowe, rozpoczecie_wspolpracy, zakonczenie_wspolpracy))
 
-# finansowanie - dla każdych zawodów od 1 do 3 sponsorów
-# - id_zawodow
-# - id_firmy, lub null
-# - data wpłaty - w przeciągu 60 dni przed zawodami
-# - kwota - od 10000 do 100000
-finansowanie = []
-for id_zawodow, (data_rozpoczecia, data_zakonczenia, liczba_widzow, koordynator) in enumerate(zawody):
-    liczba_finansowan = random.randint(1, 3)
-    jakie_firmy = random.sample(sponsorzy + [None], k=liczba_finansowan)
-    for id_firmy in jakie_firmy:
-        data_wplaty = random.randrange(data_rozpoczecia - 60*SEKUNDY_W_DNIU, data_rozpoczecia)
-        kwota = random.randint(10000, 100000)
-        finansowanie.append((id_zawodow, id_firmy, data_wplaty, kwota))
+# # TYPY ŹRÓDEŁ FINANSOWANIA - na razie nie
 
-# koszty zawodów - od 5 do 10 dla każdych zawodów
-# - id_zawodow
-# - nazwa kosztu - "Koszt" (Czy tabela rodzaje kosztów?) ---
-# - kwota - od 100 do 10000 złotych (rozkład wykładniczy)
-koszty_zawodow = []
-for id_zawodow, (data_rozpoczecia, data_zakonczenia, liczba_widzow, koordynator) in enumerate(zawody):
-    ile_kosztow = random.randint(5, 10)
-    for _ in range(ile_kosztow):
-        nazwa_kosztu = "Koszt"
-        kwota = 10**random.uniform(2, 4)
-        koszty_zawodow.append((id_zawodow, nazwa_kosztu, kwota))
+# # finansowanie - dla każdych zawodów od 1 do 3 sponsorów
+# # - id_zawodow
+# # - id_firmy, lub null
+# # - data wpłaty - w przeciągu 60 dni przed zawodami
+# # - kwota - od 10000 do 100000
+# finansowanie = []
+# for id_zawodow, (data_rozpoczecia, data_zakonczenia, liczba_widzow, koordynator) in enumerate(zawody):
+#     liczba_finansowan = random.randint(1, 3)
+#     jakie_firmy = random.sample(sponsorzy + [None], k=liczba_finansowan)
+#     for id_firmy in jakie_firmy:
+#         data_wplaty = random.randrange(data_rozpoczecia - 60*SEKUNDY_W_DNIU, data_rozpoczecia)
+#         kwota = random.randint(10000, 100000)
+#         finansowanie.append((id_zawodow, id_firmy, data_wplaty, kwota))
+
+# # koszty zawodów - od 5 do 10 dla każdych zawodów
+# # - id_zawodow
+# # - nazwa kosztu - "Koszt" (Czy tabela rodzaje kosztów?) ---
+# # - kwota - od 100 do 10000 złotych (rozkład wykładniczy)
+# koszty_zawodow = []
+# for id_zawodow, (data_rozpoczecia, data_zakonczenia, liczba_widzow, koordynator) in enumerate(zawody):
+#     ile_kosztow = random.randint(5, 10)
+#     for _ in range(ile_kosztow):
+#         nazwa_kosztu = "Koszt"
+#         kwota = 10**random.uniform(2, 4)
+#         koszty_zawodow.append((id_zawodow, nazwa_kosztu, kwota))
     
 
 #for i in rozgrywki: # chomiki / zawody / rozgrywki / uczestnictwo, można testować sobie
 #    print(i)
-
 
 
 
