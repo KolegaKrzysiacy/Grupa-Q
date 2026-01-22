@@ -13,11 +13,11 @@ CREATE TABLE chomiki
 
 CREATE TABLE czas_pojazdy
 (
-  id_uzywania       SMALLINT  NOT NULL AUTO_INCREMENT,
-  id_pojazdu        SMALLINT  NOT NULL,
-  id_chomika        SMALLINT  NOT NULL,
-  poczatek_uzywania TIMESTAMP NOT NULL,
-  koniec_uzywania   TIMESTAMP NULL    ,
+  id_uzywania       SMALLINT NOT NULL AUTO_INCREMENT,
+  id_pojazdu        SMALLINT NOT NULL,
+  id_chomika        SMALLINT NOT NULL,
+  poczatek_uzywania DATE     NOT NULL,
+  koniec_uzywania   DATE     NULL    ,
   PRIMARY KEY (id_uzywania)
 ) COMMENT 'kiedy jaki chomik ma jaki pojazd';
 
@@ -44,16 +44,12 @@ ALTER TABLE kategorie
 
 CREATE TABLE konkurencje
 (
-  id_konkurencji    SMALLINT    NOT NULL AUTO_INCREMENT,
-  nazwa_konkurencji VARCHAR(50) NOT NULL,
-  id_kategorii      SMALLINT    NOT NULL,
-  id_podloza        SMALLINT    NOT NULL,
-  dlugosc_trasy     SMALLINT    NULL     COMMENT 'odleglosc wyscigu w m',
+  id_konkurencji SMALLINT NOT NULL AUTO_INCREMENT,
+  id_kategorii   SMALLINT NOT NULL,
+  id_podloza     SMALLINT NOT NULL,
+  dlugosc_trasy  SMALLINT NULL     COMMENT 'odleglosc wyscigu w m',
   PRIMARY KEY (id_konkurencji)
 );
-
-ALTER TABLE konkurencje
-  ADD CONSTRAINT UQ_nazwa_konkurencji UNIQUE (nazwa_konkurencji);
 
 CREATE TABLE konkurencje_przeszkody
 (
@@ -107,14 +103,10 @@ ALTER TABLE podloza
 
 CREATE TABLE pojazdy
 (
-  id_pojazdu    SMALLINT    NOT NULL AUTO_INCREMENT,
-  nazwa_pojazdu VARCHAR(30) NOT NULL COMMENT 'wybrana przez właściciela',
-  id_modelu     SMALLINT    NOT NULL,
+  id_pojazdu SMALLINT NOT NULL AUTO_INCREMENT,
+  id_modelu  SMALLINT NOT NULL,
   PRIMARY KEY (id_pojazdu)
 );
-
-ALTER TABLE pojazdy
-  ADD CONSTRAINT UQ_nazwa_pojazdu UNIQUE (nazwa_pojazdu);
 
 CREATE TABLE pracownicy
 (
@@ -180,8 +172,8 @@ CREATE TABLE sponsorzy
   id_firmy               SMALLINT     NOT NULL AUTO_INCREMENT,
   nazwa_firmy            VARCHAR(100) NOT NULL,
   dane_kontaktowe        VARCHAR(255) NULL     COMMENT 'do reprezentanta firmy',
-  rozpoczecie_wspolpracy TIMESTAMP    NULL    ,
-  zakonczenie_wspolpracy TIMESTAMP    NULL    ,
+  rozpoczecie_wspolpracy DATE         NULL    ,
+  zakonczenie_wspolpracy DATE         NULL    ,
   PRIMARY KEY (id_firmy)
 );
 
@@ -261,11 +253,11 @@ CREATE TABLE zatrudnienie
 
 CREATE TABLE zawody
 (
-  id_zawodow       SMALLINT NOT NULL AUTO_INCREMENT,
-  data_rozpoczecia DATE     NOT NULL,
-  data_zakonczenia DATE     NOT NULL,
-  liczba_widzow    INT      NOT NULL DEFAULT 0,
-  id_koordynatora  SMALLINT NOT NULL COMMENT 'id pracownika',
+  id_zawodow       SMALLINT  NOT NULL AUTO_INCREMENT,
+  data_rozpoczecia TIMESTAMP NOT NULL,
+  data_zakonczenia TIMESTAMP NOT NULL,
+  liczba_widzow    INT       NOT NULL DEFAULT 0,
+  id_koordynatora  SMALLINT  NOT NULL COMMENT 'id pracownika',
   PRIMARY KEY (id_zawodow)
 );
 

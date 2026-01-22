@@ -1,14 +1,16 @@
 import random
-# import mysql.connector
+from faker import Faker         #pip install faker w gitbash
+from datetime import datetime
+import mysql.connector
 
-# con = mysql.connector.connect(
-#   host="localhost",
-#   user="admin",
-#   password="admin",
-#   database="grupaq"
-# )
+con = mysql.connector.connect(
+   host="localhost",
+   user="admin",
+   password="admin",
+   database="grupaq"
+ )
 
-# mycursor = con.cursor()
+mycursor = con.cursor()
 
 # na razie nie ma:
 # - testów antydopingowych i substancji
@@ -23,12 +25,19 @@ DNI_W_ROKU = 365.2425
 SEKUNDY_W_DNIU = 86400
 SEKUNDY_W_ROKU = DNI_W_ROKU*SEKUNDY_W_DNIU
 
+
+def to_tuples(lst):
+    return [(x,) for x in lst] #jak są tabele z tylko jednym wierszem nie licząc PK, to np ["Producent monopolista"] bierze jako str, [("Producent monopolista")], to też, dopiero [("Producent monopolista",)] działa
+
+def to_date(lst, n):
+    return [x[:n] + (datetime.fromtimestamp(x[n]).date(),) + x[n+1:] for x in lst]
+
+def to_timestamp(lst, n):
+    return [x[:n] + (datetime.fromtimestamp(x[n]),) + x[n+1:] for x in lst]
 # TUTAJ LISTY TRZEBA ZROBIĆ PRAWIDZIWE
-IMIONA = ["Adam", "Bartek", "Paweł", "Janusz"]
-NAZWISKA = ["Nowak", "Kowalski", "Mikke"]
-IMIONA_CHOMIKOW = [f"Chomik {i}" for i in range(100)] # tyle ile imion tyle chomików
+fake = Faker("pl_PL") #imiona i nazwiska
 NAZWY_FIRM = [f"Firma {i}" for i in range(20)] # tyle ile nazw tyle firm
-ZODIAKI = range(12) # Tutaj nazwy znaków zodiaku
+ZODIAKI = ["Baran", "Byk", "Bliźnięta", "Rak", "Lew", "Panna", "Waga", "Skorpion", "Strzelec", "Koziorożec", "Wodnik", "Ryby"] # Tutaj nazwy znaków zodiaku
 # rasy
 rasy = ["Syryjski", "Dżungarski", "Roborowskiego"]
 # przeszkody, podłoża, kategorie
@@ -36,8 +45,15 @@ kategorie = ["naturalna", "formuła Ch"]
 przeszkody = ["Labirynt", "Rury", "Klocki", "Podesty", "Ścianki"]
 podloza = ["Trociny", "Trawa", "Ziemia", "Piasek", "Woda"]
 producenci = ["Producent monopolista"]
+#noete tabele bo jakbym zmienił stare to w innych tabelech co biorą info z tych tak by wyszło ('Stefan', ('Dżungarski',), 1536180195, 1565454281, 1623834960)
+rasy_table = to_tuples(rasy)
+kategorie_table = to_tuples(kategorie)
+przeszkody_table = to_tuples(przeszkody)
+podloza_table = to_tuples(podloza)
+producenci_table = to_tuples(producenci)
+
 modele = {
-    "Producent monopolista": ["Model Model", "ROZKURWIACZ 5000"]
+    "Producent monopolista": ["Model Model", "ROZKURWIACZ 5000"] #to musi być normalną listą jak reszta
 }
 # stanowiska pracownikow
 stanowiska = [("Koordynator zawodów", 6100), ("Sędzia", 5900), ("Sprzątacz", 4900)]
@@ -53,12 +69,15 @@ def bida_rozklad_normalny(a, b): # tak sie serio robi ponoć (https://en.wikiped
 # - znak zodiaku (Na razie cyfry weź zmień na prawdziwe nazwy pls)
 wlasciciele = []
 for _ in range(20):
-    imie = random.choice(IMIONA)
-    nazwisko = random.choice(NAZWISKA)
-    nr_tel = random.randint(100000000, 999999999)
-    zodiak = random.choice
+    if random.choice([True, False]):
+        imie = fake.first_name_male()
+        nazwisko = fake.last_name_male()
+    else:
+        imie = fake.first_name_female()
+        nazwisko = fake.last_name_female()
+    nr_tel = random.randint(100000000, 999999999) #sprawdzić czy przypadkiem nie powtarzają się --- można zrobić random.sample
+    zodiak = random.choice(ZODIAKI)                            #zodiak = random.choice ???
     wlasciciele.append((imie, nazwisko, nr_tel, zodiak))
-
 # robimy tyle ile imion chomików:
 # - imie
 # - rasa
@@ -67,13 +86,16 @@ for _ in range(20):
 # - data zakończenia aktywności: data urodzenia plus od 1.5 do 3 lat (bida rozkład normalny)
 chomiki = []
 for i in range(100):
-    imie = IMIONA_CHOMIKOW[i]
+    if random.choice([True, False]):
+        imie = fake.first_name_male()
+    else:
+        imie = fake.first_name_female()
     rasa = random.choice(rasy)
     data_urodzenia = random.randrange(1514761200, 1735686000)
     data_dolaczenia = int(data_urodzenia + random.uniform(0.5, 1)*SEKUNDY_W_ROKU)
     czas_kariery = int(bida_rozklad_normalny(1, 2.5)*SEKUNDY_W_ROKU)
     data_zakonczenia_aktywnosci = data_dolaczenia + czas_kariery
-    chomiki.append((imie, rasa, data_urodzenia, data_dolaczenia, data_zakonczenia_aktywnosci))
+    chomiki.append((imie, rasa, data_urodzenia, data_dolaczenia, data_zakonczenia_aktywnosci)) #trzeba dodać id_właściciela
 
 # pomocniczy słownik
 id_stanowisk = {}
@@ -89,10 +111,15 @@ for i, (stanowisko, _) in enumerate(stanowiska):
 # - data zwolnienia: od daty zatrudnienia do 2025 albo wcale
 # - numer telefonu
 pracownicy = []
+pracownicy_temp = []
 chcemy_pracownikow = ["Koordynator zawodów"]*5 + ["Sędzia"]*8 + ["Sprzątacz"]*15
 for stanowisko in chcemy_pracownikow:
-    imie = random.choice(IMIONA)
-    nazwisko = random.choice(NAZWISKA)
+    if random.choice([True, False]):  #nwm czy tu nie trzeba brać już imion co istnieją pracownicy czy o co tu chodzi
+        imie = fake.first_name_male()
+        nazwisko = fake.last_name_male()
+    else:
+        imie = fake.first_name_female()
+        nazwisko = fake.last_name_female()
     id_stanowiska = id_stanowisk[stanowisko]
     nr_tel = random.randint(100000000, 999999999)
     data_zatrudnienia = random.randrange(1514761200, 1735686000)
@@ -100,7 +127,8 @@ for stanowisko in chcemy_pracownikow:
         data_zwolnienia = random.randrange(data_zatrudnienia, 1735686000)
     else:
         data_zwolnienia = None
-    pracownicy.append((imie, nazwisko, id_stanowiska, data_zatrudnienia, data_zwolnienia, nr_tel))
+    pracownicy.append((imie, nazwisko, id_stanowiska, data_zatrudnienia, data_zwolnienia, nr_tel)) #niektóre rzeczy trzeba przeniesć do innej tabeli
+    pracownicy_temp.append((imie, nazwisko, nr_tel))# tylko do tabeli tymczasowe
 
 
 # pomocniczy słownik
@@ -136,15 +164,14 @@ for _ in range(20):
 # - długość trasy - od 10 do 100 metrów
 konkurencje = []
 for i in range(20):
-    nazwa_konkurencji = f"Konkurencja {i}" # Do wyjebania chyba nazwa imo
     id_kategorii = random.randrange(0, len(kategorie))
     id_podloza = random.randrange(0, len(podloza))
     # przeszkody
-    id_przeszkod = i
+    #id_przeszkod = i  to do osobnej, jakoś rand id_konkurencji i id_przeszkody w konkurenje_przeszkody
     dlugosc_trasy = random.randint(10, 100)
-    konkurencje.append((nazwa_konkurencji, id_kategorii, id_podloza, i, dlugosc_trasy))
+    konkurencje.append((id_kategorii, id_podloza, dlugosc_trasy))
 
-# generujemy rozgrywki dla każdych zawodów - od 10 do 50 na dzień dla każdych zawodów (rozkład normalny):
+# generujemy rozgrywki dla każdych zawodów - od 10 do 50 na dzień dla każdych zawodów (rozkład normalny): # tam było że w poprzedmnim roku 
 # - id zawodów
 # - id konkurencji
 # - data rozgrywki - po kolei dni
@@ -165,7 +192,7 @@ for id_zawodow, (data_rozpoczecia, data_zakonczenia, liczba_widzow, koordynator)
 
 # # modele pojazdów (10)
 # # - producent
-# # - nazwa modelu: "Model i"
+# # - nazwa modelu: "Model i" 
 # # - cena modelu: od 100 do 1000zł
 # modele = []
 # for i in range(10):
@@ -175,7 +202,7 @@ for id_zawodow, (data_rozpoczecia, data_zakonczenia, liczba_widzow, koordynator)
 #     modele.append((producent, nazwa_modelu, cena_modelu))
 
 # # pojazdy (od 1*liczba właścicieli do 3*liczba właścicieli)
-# # - nazwa pojazdu: "Pojazd i"
+# # - nazwa pojazdu: "Pojazd i" #w sumie nie ma sensu chyba dawać im nazw jak mają nazwe modelu
 # # - id_modelu: losowy
 # pojazdy = []
 # liczba_pojazdow = random.randrange(len(wlasciciele))
@@ -190,13 +217,16 @@ for id_zawodow, (data_rozpoczecia, data_zakonczenia, liczba_widzow, koordynator)
 # - id_chomika
 # - wynik - jak na razie nie mamy typów rozgrywek ani nic więc liczby od 0 do 1 (Trzeba zrobić czas i miejsce z tego)
 # - id_pojazdu
+
+#for x in chomiki: print(int(1970+x[3]/60/60/24//365), int(x[3]/60/60/24%365 //31), int(x[3]/60/60/24%365 %31)) #mniej więcej daty
+
 uczestnictwo = []
 for id_rozgrywki, (id_zawodow, id_konkurencji, data_rozgrywki, id_sedzi) in enumerate(rozgrywki):
     # trzeba wiedzieć czy będzie pojazd czy nie będzie pojazdu:
     rozgrywka = rozgrywki[id_rozgrywki]
     id_konkurencji = rozgrywka[1] # to 1 może się zmienić
     konkurencja = konkurencje[id_konkurencji]
-    id_kategorii = konkurencja[1] # to też
+    id_kategorii = konkurencja[0] # to też --- z 1 na 0 bo brało id_podloza i było list index out of range
     kategoria = kategorie[id_kategorii]
     if kategoria == "formuła Ch":
         id_pojazdu = 0 # NA RAZIE WSZYSCY JEŻDŻĄ TYM SAMYM NIEISTNIEJĄCYM POJAZDEM PÓKI NIE MA ZROBIONYCH !!!
@@ -211,8 +241,9 @@ for id_rozgrywki, (id_zawodow, id_konkurencji, data_rozgrywki, id_sedzi) in enum
         and data_rozpoczecia >= data_dolaczenia
     ]
     ile_mamy_chomikow = len(ok_chomiki)
-    ile_bierzemy_chomikow = max(2, round(bida_rozklad_normalny(ile_mamy_chomikow*0.125, ile_mamy_chomikow*0.375)))
-    jakie_chomiki_bierzemy = random.sample(ok_chomiki, k=ile_bierzemy_chomikow)
+    ile_bierzemy_chomikow = max(2, round(bida_rozklad_normalny(ile_mamy_chomikow*0.125, ile_mamy_chomikow*0.375)))  # to chyba cały czas tylko = 2
+    #jakie_chomiki_bierzemy = random.sample(ok_chomiki, k=ile_bierzemy_chomikow) #raise ValueError("Sample larger than population or is negative") -- ok.chomiki są puste, pewnie przez to że daty nie pasują i nic nie wchodzi do nich
+    jakie_chomiki_bierzemy = random.sample(chomiki, k=ile_bierzemy_chomikow) #tymczasowe żeby było do tabeli
     for id_chomika in jakie_chomiki_bierzemy:
         wynik = random.random()
         uczestnictwo.append((id_rozgrywki, id_chomika, wynik, id_pojazdu))
@@ -222,7 +253,7 @@ for id_rozgrywki, (id_zawodow, id_konkurencji, data_rozgrywki, id_sedzi) in enum
 
 # # sponsorzy (tyle ile nazw firm)
 # # - nazwa firmy
-# # - oferta: na razie "nic"
+# # - oferta: na razie "nic" --- i nic raczej nie będzie
 # # - dane kontaktowe: numer telefonu
 # # - rozpoczęcie współpracy: od 2021 do 2025
 # # - zakończenie współpracy: od rozpoczęcia do 2025 albo wcale
@@ -272,25 +303,34 @@ for id_rozgrywki, (id_zawodow, id_konkurencji, data_rozgrywki, id_sedzi) in enum
 
 
 
-
-
-#to zostaw na razie
-#powinno działać jak wszystkie tabele będą wypełnione ale to się jeszcze potem sprawdzi
+""" #wszystkie
+tables = [producenci_table, modele, pojazdy, czas_pojazdy, rasy_table, wlasciciele, chomiki, substancje, kontrole_antydopingowe, kontrola_substancji, sponsorzy, typy_zrodel_finansowania, stanowiska, pracownicy, zatrudnienie, zawody, rodzaje_kosztow, koszty_zawodow, finansowanie, kategorie_table, podloza_table, przeszkody_table, konkurencje, konkurencje_przeszkody, rozgrywki, uczestnictwo, wazenie]
+databases = ["producenci", "modele", "pojazdy", "czas_pojazdy", "rasy", "wlasciciele", "chomiki", "substancje", "kontrole_antydopingowe", "kontrola_substancji", "sponsorzy", "typy_zrodel_finansowania", "stanowiska", "pracownicy", "zatrudnienie", "zawody", "rodzaje_kosztow", "koszty_zawodow", "finansowanie", "kategorie", "podloza", "przeszkody", "konkurencje", "konkurencje_przeszkody", "rozgrywki", "uczestnictwo", "wazenie"]
+variables = ["(nazwa_producenta)", "(nazwa_modelu, cena_modelu, id_producenta)", "(id_modelu)", "(id_pojazdu, id_chomika, poczatek_uzywania, koniec_uzywania)", "(nazwa_rasy)", "(imie_wlasciciela, nazwisko_wlasciciela, numer_telefonu, zodiak_wlasciciela)", "(imie_chomika, id_wlasciciela, id_rasy, data_urodzenia, data_dolaczenia, data_odejscia)", "(nazwa_substancji)", "(id_chomika, data_kontroli)", "(id_kontroli, id_substancji, wynik_testu)", "(nazwa_firmy, dane_kontaktowe, rozpoczecie_wspolpracy, zakonczenie_wspolpracy)", "(nazwa_typu)", "(nazwa_stanowiska, wyplata)", "(imie_pracownika, nazwisko_pracownika, numer_telefonu)", "(id_stanowiska, id_pracownika, data_zatrudnienia, data_zwolnienia)", "(data_rozpoczecia, data_zakonczenia, liczba_widzow, id_koordynatora)", "(nazwa_kosztu)", "(id_zawodow, id_kosztu, kwota)", "(id_zawodow, id_typu, id_firmy, data_wplaty, kwota)", "(nazwa_kategorii)", "(nazwa_podloza)", "(rodzaj_przeszkody)", "(id_kategorii, id_podloza, dlugosc_trasy)", "(id_konkurencji, id_przeszkody)", "(id_zawodow, id_konkurencji, data_rozgrywki, id_sedzi)", "(id_chomika, id_rozgrywki, miejsce)", "(id_chomika, id_zawodow, waga, data_wazenia)"]
+lenghts = [1, 3, 1, 4, 1, 4, 6, 1, 2, 3, 4, 1, 2, 3, 4, 4, 1, 3, 5, 1, 1, 1, 3, 2, 4, 3, 4]
 """
-tables = [producenci, modele, pojazdy, rasy, wlasciciele, chomiki, substancje, kontrola_substancji, kontrole_antydopingowe, sponsorzy, typy_zrodel_finansowania, stanowiska, pracownicy, zawody, rodzaje_kosztow, koszty_zawodow, finansowanie, rozgrywki, uczestnictwo, przeszkody, podloza, kategorie, konkurencje, konkurencje_przeszkody, wazenie]
-databases = ["producenci", "modele", "pojazdy", "rasy", "wlasciciele", "chomiki", "substancje", "kontrola_substancji", "kontrole_antydopingowe", "sponsorzy", "typy_zrodel_finansowania", "stanowiska", "pracownicy", "zawody", "rodzaje_kosztow", "koszty_zawodow", "finansowanie", "rozgrywki", "uczestnictwo", "przeszkody", "podloza", "kategorie", "konkurencje", "konkurencje_przeszkody", "wazenie"]
-variables = ["(nazwa_producenta)", "(nazwa_modelu, cena_modelu, id_producenta)", "(nazwa_pojazdu, id_modelu)", "(nazwa_rasy)", "(imie_wlasciciela, nazwisko_wlasciciela, numer_telefonu)", "(imie_chomika, id_wlasciciela, id_rasy, data_urodzenia, data_dolaczenia, data_odejscia)", "(nazwa_substancji)", "(id_kontroli, id_substancji, wynik_testu)", "(id_chomika, id_zawodow, data_kontroli)", "(nazwa_firmy, oferta, dane_kontaktowe, rozpoczecie_wspolpracy, zakonczenie_wspolpracy)", "(nazwa_typu)", "(nazwa_stanowiska, wyplata)", "(imie_pracownika, nazwisko_pracownika, id_stanowiska, data_zatrudnienia, data_zwolnienia, numer_telefonu)", "(data_rozpoczecia, data_zakonczenia, liczba_widzow, id_koordynatora)", "(nazwa_kosztu)", "(id_zawodow, id_kosztu, kwota)", "(id_zawodow, id_typu, id_firmy, data_wplaty, kwota)", "(id_zawodow, id_konkurencji, data_rozgrywki, id_sedzi)", "(id_chomika, id_rozgrywki, czas, miejsce, id_pojazdu)", "(rodzaj_przeszkody)", "(nazwa_podloza)", "(nazwa_kategorii)", "(nazwa_konkurencji, id_kategorii, id_podloza, dlugosc_trasy)", "(id_konkurencji, id_przeszkody)", "(id_chomika, id_zawodow, waga, data_wazenia)"]
-lenghts = [1, 3, 2, 1, 3, 6, 1, 3, 3, 5, 1, 2, 6, 4, 1, 3, 5, 4, 5, 1, 1, 1, 4, 2, 4]
-def fill(table, database, variable, lenght):
-    sql = "INSERT INTO " + database + " " + variable + " VALUES (%s" + ", %s" * (lenght - 1) + ")"
+
+"""
+#na razie te co mają dane
+tables = [producenci_table, rasy_table, wlasciciele, stanowiska, pracownicy_temp, zawody, kategorie_table, podloza_table, przeszkody_table, konkurencje, konkurencje_przeszkody, rozgrywki, uczestnictwo]
+databases = ["producenci", "rasy", "wlasciciele", "stanowiska", "pracownicy", "zawody", "kategorie", "podloza", "przeszkody", "konkurencje", "konkurencje_przeszkody", "rozgrywki", "uczestnictwo"]
+variables = ["(nazwa_producenta)", "(nazwa_rasy)", "(imie_wlasciciela, nazwisko_wlasciciela, numer_telefonu, zodiak_wlasciciela)", "(nazwa_stanowiska, wyplata)", "(imie_pracownika, nazwisko_pracownika, numer_telefonu)", "(data_rozpoczecia, data_zakonczenia, liczba_widzow, id_koordynatora)", "(nazwa_kategorii)", "(nazwa_podloza)", "(rodzaj_przeszkody)", "(id_kategorii, id_podloza, dlugosc_trasy)", "(id_konkurencji, id_przeszkody)", "(id_zawodow, id_konkurencji, data_rozgrywki, id_sedzi)", "(id_chomika, id_rozgrywki, miejsce)"]
+"""
+tables = [producenci_table, rasy_table, wlasciciele, stanowiska, pracownicy_temp]
+databases = ["producenci", "rasy", "wlasciciele", "stanowiska", "pracownicy"]
+variables = ["(nazwa_producenta)", "(nazwa_rasy)", "(imie_wlasciciela, nazwisko_wlasciciela, numer_telefonu, zodiak_wlasciciela)", "(nazwa_stanowiska, wyplata)", "(imie_pracownika, nazwisko_pracownika, numer_telefonu)"]
+
+def fill(table, database, variable):
+    
+    placeholders = ", ".join(["%s"] * len(table[0]))
+    sql = f"INSERT INTO {database} {variable} VALUES ({placeholders})"
+    print(sql)
     mycursor.executemany(sql, table)
 
 for i in range(len(tables)):
-    fill(tables[i], databases[i], variables[i], lenghts[i])
+    fill(tables[i], databases[i], variables[i])
 
 
-"""
-
-
-# mycursor.close()
-# con.close()
+con.commit()
+mycursor.close()
+con.close()
