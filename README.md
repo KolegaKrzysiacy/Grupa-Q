@@ -16,7 +16,6 @@ pip install mysql-connector-python
 5.2. Uruchomić w VS po kolei
 create.py
 schemat.sql
-additional.py
 generujemy.py
 
 5.3 Update

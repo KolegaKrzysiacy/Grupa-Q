@@ -4,9 +4,9 @@
   "settings": {
     "width": 3000,
     "height": 3000,
-    "scrollTop": -997,
-    "scrollLeft": -246,
-    "zoomLevel": 0.88,
+    "scrollTop": -1741.1961,
+    "scrollLeft": -934.9212,
+    "zoomLevel": 0.73,
     "show": 511,
     "database": 4,
     "databaseName": "PROJEKT",
@@ -251,8 +251,7 @@
         "comment": "uczestnictwo w rozgrywkach",
         "columnIds": [
           "5WNKTTI7LZHoa-iEhe0KS",
-          "qW2S8Zt60Ynkbg2Zpp9eY",
-          "zIIZ-jMyOikUCuFAEOoax"
+          "qW2S8Zt60Ynkbg2Zpp9eY"
         ],
         "seqColumnIds": [
           "3j_fkafa6D88XwqtWz5n8",
@@ -266,15 +265,15 @@
           "z1yhDV_-XyHCIM5uBYEAW"
         ],
         "ui": {
-          "x": 1351.6833,
-          "y": 2200.3081,
+          "x": 1368.1221,
+          "y": 2168.8013,
           "zIndex": 846,
           "widthName": 70,
           "widthComment": 152,
           "color": ""
         },
         "meta": {
-          "updateAt": 1769006376823,
+          "updateAt": 1769139810150,
           "createAt": 1767464504255
         }
       },
@@ -4468,8 +4467,8 @@
           "columnIds": [
             "5WNKTTI7LZHoa-iEhe0KS"
           ],
-          "x": 1583.6833,
-          "y": 2200.3081,
+          "x": 1581.1221,
+          "y": 2168.8013,
           "direction": 4
         },
         "meta": {
@@ -4580,8 +4579,8 @@
           "columnIds": [
             "qW2S8Zt60Ynkbg2Zpp9eY"
           ],
-          "x": 1351.6833,
-          "y": 2264.3081,
+          "x": 1368.1221,
+          "y": 2220.8013,
           "direction": 1
         },
         "meta": {
