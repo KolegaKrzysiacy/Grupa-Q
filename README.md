@@ -16,7 +16,7 @@ pip install mysql-connector-python
 5.2. Uruchomić w VS po kolei
 create.py
 schemat.sql
-generujemy.py
+generate.py
 
 5.3 Update
 del.py - jak chcesz usunąć baze jak masz starą wersje, potem musisz od nowa 5.2 żeby stworzyć baze i wgrać nowe dane

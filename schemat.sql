@@ -11,16 +11,6 @@ CREATE TABLE chomiki
   PRIMARY KEY (id_chomika)
 );
 
-CREATE TABLE czas_pojazdy
-(
-  id_uzywania       SMALLINT NOT NULL AUTO_INCREMENT,
-  id_pojazdu        SMALLINT NOT NULL,
-  id_chomika        SMALLINT NOT NULL,
-  poczatek_uzywania DATE     NOT NULL,
-  koniec_uzywania   DATE     NULL    ,
-  PRIMARY KEY (id_uzywania)
-) COMMENT 'kiedy jaki chomik ma jaki pojazd';
-
 CREATE TABLE finansowanie
 (
   id_finansowania SMALLINT      NOT NULL AUTO_INCREMENT,
@@ -68,26 +58,26 @@ CREATE TABLE kontrola_substancji
 
 CREATE TABLE kontrole_antydopingowe
 (
-  id_kontroli   SMALLINT  NOT NULL AUTO_INCREMENT,
-  id_chomika    SMALLINT  NOT NULL,
-  data_kontroli TIMESTAMP NOT NULL COMMENT 'sprawdzać czy pasuje',
+  id_kontroli   SMALLINT NOT NULL AUTO_INCREMENT,
+  id_chomika    SMALLINT NOT NULL,
+  data_kontroli DATE     NOT NULL COMMENT 'sprawdzać czy pasuje',
   PRIMARY KEY (id_kontroli)
 );
 
 CREATE TABLE koszty_zawodow
 (
-  id_zawodow SMALLINT      NOT NULL,
-  id_kosztu  SMALLINT      NOT NULL,
-  kwota      DECIMAL(10,2) NOT NULL DEFAULT 0,
-  PRIMARY KEY (id_zawodow, id_kosztu)
+  id_zawodow     SMALLINT      NOT NULL,
+  id_typu_kosztu SMALLINT      NOT NULL,
+  kwota          DECIMAL(10,2) NOT NULL DEFAULT 0,
+  PRIMARY KEY (id_zawodow, id_typu_kosztu)
 );
 
 CREATE TABLE modele
 (
   id_model      SMALLINT      NOT NULL AUTO_INCREMENT,
+  id_producenta SMALLINT      NOT NULL,
   nazwa_modelu  VARCHAR(30)   NOT NULL COMMENT 'DODAJ TYPY ITD',
   cena_modelu   DECIMAL(10,2) NOT NULL COMMENT 'cena w zł, żeby w analize wykorzystać',
-  id_producenta SMALLINT      NOT NULL,
   PRIMARY KEY (id_model)
 );
 
@@ -215,7 +205,8 @@ CREATE TABLE uczestnictwo
 (
   id_chomika   SMALLINT NOT NULL,
   id_rozgrywki SMALLINT NOT NULL,
-  miejsce      SMALLINT NULL     COMMENT 'miejsce w wyścigu',
+  id_pojazdu   SMALLINT NULL    ,
+  miejsce      SMALLINT NOT NULL,
   PRIMARY KEY (id_chomika, id_rozgrywki)
 ) COMMENT 'uczestnictwo w rozgrywkach';
 
@@ -253,11 +244,11 @@ CREATE TABLE zatrudnienie
 
 CREATE TABLE zawody
 (
-  id_zawodow       SMALLINT  NOT NULL AUTO_INCREMENT,
-  data_rozpoczecia TIMESTAMP NOT NULL,
-  data_zakonczenia TIMESTAMP NOT NULL,
-  liczba_widzow    INT       NOT NULL DEFAULT 0,
-  id_koordynatora  SMALLINT  NOT NULL COMMENT 'id pracownika',
+  id_zawodow       SMALLINT NOT NULL AUTO_INCREMENT,
+  data_rozpoczecia DATE     NOT NULL,
+  data_zakonczenia DATE     NOT NULL,
+  liczba_widzow    INT      NOT NULL DEFAULT 0,
+  id_koordynatora  SMALLINT NOT NULL COMMENT 'id pracownika',
   PRIMARY KEY (id_zawodow)
 );
 
@@ -373,7 +364,7 @@ ALTER TABLE konkurencje_przeszkody
 
 ALTER TABLE koszty_zawodow
   ADD CONSTRAINT FK_rodzaje_kosztow_TO_koszty_zawodow
-    FOREIGN KEY (id_kosztu)
+    FOREIGN KEY (id_typu_kosztu)
     REFERENCES rodzaje_kosztow (id_kosztu);
 
 ALTER TABLE uczestnictwo
@@ -391,12 +382,7 @@ ALTER TABLE zatrudnienie
     FOREIGN KEY (id_pracownika)
     REFERENCES pracownicy (id_pracownika);
 
-ALTER TABLE czas_pojazdy
-  ADD CONSTRAINT FK_pojazdy_TO_czas_pojazdy
+ALTER TABLE uczestnictwo
+  ADD CONSTRAINT FK_pojazdy_TO_uczestnictwo
     FOREIGN KEY (id_pojazdu)
     REFERENCES pojazdy (id_pojazdu);
-
-ALTER TABLE czas_pojazdy
-  ADD CONSTRAINT FK_chomiki_TO_czas_pojazdy
-    FOREIGN KEY (id_chomika)
-    REFERENCES chomiki (id_chomika);
