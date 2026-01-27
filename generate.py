@@ -1,24 +1,24 @@
 import random
 from faker import Faker
 from datetime import datetime, timedelta, time
-import mysql.connector
+# import mysql.connector
 
-con = mysql.connector.connect(
-   host="localhost",
-   user="admin",
-   password="admin",
-   database="grupaq"
-)
+# con = mysql.connector.connect(
+#    host="localhost",
+#    user="admin",
+#    password="admin",
+#    database="grupaq"
+# )
 
-mycursor = con.cursor()
+# mycursor = con.cursor()
 
-#resetuje baze danych i czyści auto increment, żeby zaczynało się od 1, bo inaczej jak się generuje FK z range() kod się wysypuję
-databases = ["producenci", "rasy", "kategorie", "podloza", "przeszkody", "substancje", "typy_zrodel_finansowania", "rodzaje_kosztow", "stanowiska", "sponsorzy", "wlasciciele", "modele", "pracownicy", "pojazdy", "chomiki", "kontrole_antydopingowe", "kontrola_substancji", "konkurencje", "konkurencje_przeszkody", "zawody", "zatrudnienie", "koszty_zawodow", "finansowanie", "rozgrywki", "uczestnictwo", "wazenie"]
-mycursor.execute("SET FOREIGN_KEY_CHECKS=0")
-for x in databases:
-    mycursor.execute(f"TRUNCATE TABLE {x}")
-mycursor.execute("SET FOREIGN_KEY_CHECKS=1")
-con.commit()
+# #resetuje baze danych i czyści auto increment, żeby zaczynało się od 1, bo inaczej jak się generuje FK z range() kod się wysypuję
+# databases = ["producenci", "rasy", "kategorie", "podloza", "przeszkody", "substancje", "typy_zrodel_finansowania", "rodzaje_kosztow", "stanowiska", "sponsorzy", "wlasciciele", "modele", "pracownicy", "pojazdy", "chomiki", "kontrole_antydopingowe", "kontrola_substancji", "konkurencje", "konkurencje_przeszkody", "zawody", "zatrudnienie", "koszty_zawodow", "finansowanie", "rozgrywki", "uczestnictwo", "wazenie"]
+# mycursor.execute("SET FOREIGN_KEY_CHECKS=0")
+# for x in databases:
+#     mycursor.execute(f"TRUNCATE TABLE {x}")
+# mycursor.execute("SET FOREIGN_KEY_CHECKS=1")
+# con.commit()
 
 random.seed(42) #seed, żeby każdy miał te same dane po generacji
 Faker.seed(42) #tak samo tylko do imion
@@ -336,7 +336,8 @@ for id_rozgrywki, (id_zawodow, id_konkurencji, _, _) in enumerate(rozgrywki):
     jakie_chomiki_bierzemy = random.sample(ok_chomiki, int(bida_rozklad_normalny(2, len(ok_chomiki))))
     ile_chomikow_bierzemy = len(jakie_chomiki_bierzemy)
     kategoria = konkurencje[id_konkurencji - 1][0]
-    miejsca = random.sample(range(1, ile_chomikow_bierzemy + 1), ile_chomikow_bierzemy)
+    wyniki_chomikow = [1.5*random.random() if wlasciciele[chomiki[chomik_id-1][1]-1][3] == "Byk" else random.random() for chomik_id in jakie_chomiki_bierzemy]
+    miejsca = [i+1 for i, _ in sorted(enumerate(wyniki_chomikow), key=lambda k: k[1])]
     for i, (id_chomika) in enumerate(jakie_chomiki_bierzemy): 
         miejsce = miejsca[i]
         if kategoria == 2:
@@ -358,23 +359,23 @@ for _, (id_chomika, id_zawodow) in enumerate(wazenia):
     bazowa_waga = bida_rozklad_normalny(PRZEDZIALY_WAG[id_rasy - 1][0], PRZEDZIALY_WAG[id_rasy - 1][1])
     data_wazenia = datetime.combine(data_rozpoczecia, time(10, 0))
     wazenie.append((id_chomika, id_zawodow, bazowa_waga * bida_rozklad_normalny(0.9, 1.1), data_wazenia))
-print(wazenie)
+# print(wazenie)
 
 #wpisywanie do bazy danych
 tables = [producenci, rasy, kategorie, podloza, przeszkody, substancje, typy_zrodel_finansowania, rodzaje_kosztow, stanowiska, sponsorzy, wlasciciele, modele, pracownicy, zatrudnienie, konkurencje, konkurencje_przeszkody, zawody, rozgrywki, pojazdy, chomiki, kontrole_antydopingowe, kontrola_substancji, koszty_zawodow, finansowanie, uczestnictwo, wazenie]
 databases = ["producenci", "rasy", "kategorie", "podloza", "przeszkody", "substancje", "typy_zrodel_finansowania", "rodzaje_kosztow", "stanowiska", "sponsorzy", "wlasciciele", "modele", "pracownicy", "zatrudnienie", "konkurencje", "konkurencje_przeszkody", "zawody", "rozgrywki", "pojazdy", "chomiki", "kontrole_antydopingowe", "kontrola_substancji", "koszty_zawodow", "finansowanie", "uczestnictwo", "wazenie"]
 variables = ["(nazwa_producenta)", "(nazwa_rasy)", "(nazwa_kategorii)", "(nazwa_podloza)", "(rodzaj_przeszkody)", "(nazwa_substancji)", "(nazwa_typu)", "(nazwa_kosztu)", "(nazwa_stanowiska, wyplata)", "(nazwa_firmy, dane_kontaktowe, rozpoczecie_wspolpracy, zakonczenie_wspolpracy)", "(imie_wlasciciela, nazwisko_wlasciciela, numer_telefonu, zodiak_wlasciciela)", "(id_producenta, nazwa_modelu, cena_modelu)", "(imie_pracownika, nazwisko_pracownika, numer_telefonu)", "(id_stanowiska, id_pracownika, data_zatrudnienia, data_zwolnienia)", "(id_kategorii, id_podloza, dlugosc_trasy)", "(id_konkurencji, id_przeszkody)", "(data_rozpoczecia, data_zakonczenia, liczba_widzow, id_koordynatora)", "(id_zawodow, id_konkurencji, data_rozgrywki, id_sedzi)", "(id_modelu)", "(imie_chomika, id_wlasciciela, id_rasy, data_urodzenia, data_dolaczenia, data_odejscia)", "(id_chomika, data_kontroli)", "(id_kontroli, id_substancji, wynik_testu)", "(id_zawodow, id_typu_kosztu, kwota)", "(id_zawodow, id_typu, id_firmy, data_wplaty, kwota)", "(id_chomika, id_rozgrywki, id_pojazdu, miejsce)", "(id_chomika, id_zawodow, waga, data_wazenia)"]
 
-def fill(table, database, variable):
-    if not table: return
-    placeholders = ", ".join(["%s"] * len(table[0]))
-    sql = f"INSERT INTO {database} {variable} VALUES ({placeholders})"
-    print(sql)
-    mycursor.executemany(sql, table)
+# def fill(table, database, variable):
+#     if not table: return
+#     placeholders = ", ".join(["%s"] * len(table[0]))
+#     sql = f"INSERT INTO {database} {variable} VALUES ({placeholders})"
+#     print(sql)
+#     mycursor.executemany(sql, table)
 
-for i in range(len(tables)):
-    fill(tables[i], databases[i], variables[i])
+# for i in range(len(tables)):
+#     fill(tables[i], databases[i], variables[i])
 
-con.commit()
-mycursor.close()
-con.close()
+# con.commit()
+# mycursor.close()
+# con.close()
