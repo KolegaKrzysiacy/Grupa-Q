@@ -1,22 +1,223 @@
 ---
-title: "raport"
+title: "Raport"
+author: "myszeczki"
 format: pdf
 editor: visual
+lang: pl
+execute:
+  warning: false
+  message: false
 ---
 
-## Raport
+```{r, echo=FALSE}
+#wczytanie pakietu potrzebnego do połaczenia
+library(RMariaDB)
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+#ustanowienie połaczenia z serwerem zajęciowym
+con <- dbConnect(RMariaDB::MariaDB(),
+                 dbname = "grupaq",
+                 username = "admin",
+                 password = "admin",
+                 host = "localhost")
 
-```{r}
-1 + 1
+
+#Zamknięcie połączenia
+#dbDisconnect(con)
 ```
 
-You can add options to executable code like this
+## Wstęp
 
-```{r}
-#| echo: false
-2 * 2
+Celem niniejszej analizy jest ocena wyników sportowców oraz zbadanie funkcjonowania zawodów, ze szczególnym uwzględnieniem organizacji dyscyplin i zasad wynagradzania uczestników. W analizie dążymy do wyłonienia najlepszego sportowca oraz identyfikacji czynników wpływających na osiągnięcie najwyższych wyników. Ponadto analiza ma na celu odpowiedź na pytania dotyczące charakterystyki poszczególnych dyscyplin rozgrywanych podczas zawodów, a także sposobu finansowania wydarzenia i systemu wynagradzania uczestników.
+
+Analiza została przeprowadzona na podstawie stworzonej bazy danych dla Międzynarodowej Federacji Wyścigów Chomików, która organizuje część Światowej Olimpiady Chomików.
+
+## Specyfikacja bazy
+
+```{r, echo=FALSE}
+#przypisanie zapytania pod query
+query <- "SELECT COUNT(*) AS liczba_tabel
+          FROM information_schema.tables
+          WHERE table_schema = 'grupaq';"
+q2 <- "Select count(*) as plt from chomiki"
+
+#zapisanie uzyskanego wyniku, który jest ramką danych pod zmienną
+df <- dbGetQuery(con, query)
+df2 <- dbGetQuery(con, q2)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+Baza danych zawiera `r df$liczba_tabel` tabel. W tabeli chomiki znajdują się informacjie o `r df2$plt` chonikach miedzy innymi takie jak: imię, właściciel oraz rasa. Kolejną bardzo istotną tablą jest tabela
+
+nwm tu pomyślimy co jeszcze dopisac
+
+## Pytania oraz cele badawcze:
+
+1.  Znaleźenie najlepszego zawodnika w zależności od dyscypliny sportowej oraz ile trawa ich "szczyt kariery".
+2.  Czy chomiki należące do bogatszych właścicieli osiągają lepsze wyniki dzięki lepszemu sprzętowi, karmie lub treningowi?
+3.  Jak zmienia się liczba zawodników?
+4.  Czy federacja chomikowego sportu jest finansowo rentowna?
+5.  Które kategorie i dyscypliny przyciągają najwięcej widzów i sponsorów?
+
+## Analiza danych
+
+Na początku postaramy się znaleźć najlepszych zawodników w danych kategoriach oraz ile trwa ich najlepszy okres w karierze.
+
+```{r, echo=FALSE}
+
+q3 <- "SELECT kategorie.id_kategorii,
+       kategorie.nazwa_kategorii AS nazwa_kategorii,
+       chomiki.id_chomika,
+       chomiki.imie_chomika AS nazwa_chomika,
+       count(chomiki.id_chomika) as liczba_zwycięstw
+FROM kategorie 
+JOIN konkurencje  ON kategorie.id_kategorii = konkurencje.id_kategorii
+JOIN rozgrywki  ON konkurencje.id_konkurencji = rozgrywki.id_konkurencji
+JOIN uczestnictwo  ON rozgrywki.id_rozgrywki = uczestnictwo.id_rozgrywki
+JOIN chomiki  ON uczestnictwo.id_chomika = chomiki.id_chomika
+where uczestnictwo.miejsce = 1
+GROUP BY kategorie.id_kategorii, kategorie.nazwa_kategorii, chomiki.id_chomika, chomiki.imie_chomika
+ORDER BY count(chomiki.id_chomika) desc
+limit 2;"
+
+
+df3 <- dbGetQuery(con, q3)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(kableExtra)
+tabela <- df3
+kable(
+  tabela,
+  booktabs = TRUE,
+  caption = "Najlepsi chomicy w każdej kategorii"
+) |>
+  kable_styling(
+    latex_options = c("hold_position", "striped"),  # trzyma tabelę w miejscu + paski
+    full_width = FALSE
+  )
+```
+
+Powyższa tabele przedstwia chomiki, które wygrały najwięcej razy w danej kategorii. W kategorii `r df3[1,1]` `r df3[1, 4]` wygrał aż `r df3[1,5]` razy.
+
+```{r, echo=FALSE}
+
+q4 <- "SELECT 
+    round(AVG(roznica_miesiecy), 1) AS srednia_roznica_miesiecy
+FROM (
+    SELECT 
+        TIMESTAMPDIFF(MONTH, MIN(rozgrywki.data_rozgrywki), MAX(rozgrywki.data_rozgrywki)) AS roznica_miesiecy
+    FROM rozgrywki
+    JOIN uczestnictwo 
+          ON rozgrywki.id_rozgrywki = uczestnictwo.id_rozgrywki
+    WHERE uczestnictwo.miejsce IN (1,2,3,4,5,6)
+    GROUP BY uczestnictwo.id_chomika
+) as miesiace;"
+
+df4 <- dbGetQuery(con, q4)
+```
+
+Następnie sprawdzilismy ile średnio trwa szczyt kariery u chomików. Zostało to wyliczone na podstawie sredniej roznicy w miesiacach miedzy data zawodów, w których chomiki zajeły od 1 do 6 miejsca.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(kableExtra)
+tabela <- df4
+kable(
+  tabela,
+  booktabs = TRUE,
+  caption = "Najlepsi chomicy w każdej kategorii"
+) |>
+  kable_styling(
+    latex_options = c("hold_position", "striped"),  # trzyma tabelę w miejscu + paski
+    full_width = FALSE
+  )
+```
+
+```{r, echo=FALSE}
+q5 <- "select year(zawody.data_rozpoczecia) as rok,  COUNT(DISTINCT uczestnictwo.id_chomika) AS liczba_uczestnikow
+from zawody
+LEFT JOIN rozgrywki
+on zawody.id_zawodow = rozgrywki.id_zawodow
+left JOIN uczestnictwo 
+      ON rozgrywki.id_rozgrywki = uczestnictwo.id_rozgrywki
+left JOIN chomiki
+      ON uczestnictwo.id_chomika = chomiki.id_chomika
+GROUP BY YEAR(zawody.data_rozpoczecia)
+ORDER BY rok;"
+
+df5 <- dbGetQuery(con, q5)
+
+```
+
+```{r, echo=FALSE}
+library(dplyr)
+library(ggplot2)
+
+
+ggplot(df5, aes(x = rok, y = liczba_uczestnikow)) +
+  geom_point(color="hotpink",size = 3) +  # punkty niebieskie, większe
+  labs(
+    title = "Liczba uczestników zawodów w kolejnych latach",
+    x = "Rok",
+    y = "Liczba uczestników"
+  ) +
+  theme_classic()
+```
+
+Powyższy wykres przedstawia średnią liczbę chomików uczestniczących w zawodach w poszczególnych latach. Widoczna jest wyraźna tendencja wzrostowa do roku 2020, a następnie ponownie od roku 2024. W okresie pomiędzy 2020 a 2024 rokiem średnia liczba uczestników pozostawała na zbliżonym poziomie. Może to sugerować wpływ czynników zewnętrznych, takich jak pandemia COVID-19, która mogła ograniczyć organizację zawodów lub udział w nich.
+
+```{r, echo=FALSE}
+q6 <- "select round(avg(rentownosc_procent),2) as Rentowność from(
+select koszty_zawodow.id_zawodow, sum(koszty_zawodow.kwota) as wydane,
+        sum(finansowanie.kwota) as dostane, sum(finansowanie.kwota) - sum(koszty_zawodow.kwota) as przychod,
+            ROUND(
+      (SUM(finansowanie.kwota) - SUM(koszty_zawodow.kwota)) 
+      / SUM(koszty_zawodow.kwota) * 100
+    , 2) AS rentownosc_procent
+from koszty_zawodow
+LEFT JOIN finansowanie
+on koszty_zawodow.id_zawodow = finansowanie.id_zawodow
+GROUP BY koszty_zawodow.id_zawodow
+) t;
+"
+df6 <- dbGetQuery(con, q6)
+```
+
+Rentowność określa stopień opłacalności i została obliczona jako stosunek zysku do poniesionych kosztów, wyrażony w procentach. Zysk wyznaczono jako różnicę pomiędzy otrzymanym finansowaniem a kosztami organizacji zawodów. Dodatnia wartość rentowności oznacza, że wydarzenia generowały nadwyżkę finansową, natomiast wartość ujemna wskazuje na stratę.
+
+Wzor na retnowność:
+
+$$
+R = \frac{przychody - koszty}{koszty} \cdot 100 \%.
+$$
+
+W analizowanych danych otrzymaliśmy rentownosć w wysokosci `r df6$Rentowność`. Oznacza to, że organizowane zawody otzrymują wysokie dofinansowania w stosunku do wydatków. Dzięki temu federacja może przeznaczać nadwyżkę na dalszy rozwó, miedzy innymi inwestować w nowe konkurencjie, czy organizację zawodów na wieksza skalę, co może przyciągać większą liczbę widzów oraz właścicieli chomików.
+
+```{r, echo=FALSE}
+
+q7 <- "select year(zawody.data_rozpoczecia) as Rok, sum(finansowanie.kwota) - sum(koszty_zawodow.kwota) as przychod 
+from zawody
+left join koszty_zawodow
+on zawody.id_zawodow = koszty_zawodow.id_zawodow
+LEFT JOIN finansowanie
+on koszty_zawodow.id_zawodow = finansowanie.id_zawodow
+GROUP BY  year(zawody.data_rozpoczecia)
+ORDER BY year(zawody.data_rozpoczecia);"
+
+df7 <- dbGetQuery(con, q7)
+
+```
+
+```{r, echo=FALSE}
+library(scales)
+ggplot(df7, aes(x = Rok, y = przychod)) +
+  geom_point(color="hotpink",size = 3) +  
+    scale_y_continuous(labels = label_number(scale = 1e-5)) +
+  labs(
+    title = "Przychod z zawodów w kolejnych latach",
+    x = "Rok",
+    y = "Przychód (×10⁵)"
+  ) +
+  theme_classic()
+
+```
+
+Powyższy wykres przedstawia wysokość przychodu z zawodów w kolejnych latach. Można zauważyć, że w każdym roku pzrychód wyniósł co najmniej $40\cdot 10^5$ jednostek pieniężnych.
