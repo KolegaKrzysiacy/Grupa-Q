@@ -147,6 +147,8 @@ df5 <- dbGetQuery(con, q5)
 
 ```
 
+Ad 3. Jak zmienia się liczba zawodników?
+
 ```{r, echo=FALSE}
 library(dplyr)
 library(ggplot2)
@@ -180,6 +182,8 @@ GROUP BY koszty_zawodow.id_zawodow
 "
 df6 <- dbGetQuery(con, q6)
 ```
+
+Ad 4. rentowność
 
 Rentowność określa stopień opłacalności i została obliczona jako stosunek zysku do poniesionych kosztów, wyrażony w procentach. Zysk wyznaczono jako różnicę pomiędzy otrzymanym finansowaniem a kosztami organizacji zawodów. Dodatnia wartość rentowności oznacza, że wydarzenia generowały nadwyżkę finansową, natomiast wartość ujemna wskazuje na stratę.
 
@@ -220,4 +224,6 @@ ggplot(df7, aes(x = Rok, y = przychod)) +
 
 ```
 
-Powyższy wykres przedstawia wysokość przychodu z zawodów w kolejnych latach. Można zauważyć, że w każdym roku pzrychód wyniósł co najmniej $40\cdot 10^5$ jednostek pieniężnych.
+Powyższy wykres przedstawia wysokość przychodu z zawodów w kolejnych latach. Można zauważyć, dużą zmienność finansową na przestrzeni lat. Nawiekszy przychód został odnotowany w 2023, gdzie wyniósł ponad $120 \cdot 10^5$ . Natomiast po roku 2024 przychody ustabilizowały się i można przypuszczać, że federacja osiągnęła względnie stały poziom wpływów finansowych. Pomimo rekordowej frekfencji zawodów w 2025 przychody nie wzrosły istotnie, co może sugerować zmianę strategii federacji, na przykład większe inwestycje w organizację wydarzeń lub ograniczenie kosztów uczestnictwa. Warto podkreślić, że w żadnym z analizowanych lat przychód nie spadł poniżej $40 \cdot 10^5$, co swiadczy o śwetnym funkcjonowaniu finansowym zawodów.
+
+Ad 5. Ktore kat najbardziej atrakcyjne dla widzów.
