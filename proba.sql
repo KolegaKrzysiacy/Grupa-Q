@@ -51,7 +51,7 @@ GROUP by chomiki.id_chomika);
 
 
 SELECT 
-    round(AVG(roznica_miesiecy), 1) AS srednia_roznica_miesiecy
+    round(MEdian(roznica_miesiecy), 1) AS srednia_roznica_miesiecy
 FROM (
     SELECT 
         TIMESTAMPDIFF(MONTH, MIN(rozgrywki.data_rozgrywki), MAX(rozgrywki.data_rozgrywki)) AS roznica_miesiecy
@@ -122,3 +122,52 @@ LEFT JOIN finansowanie
 on koszty_zawodow.id_zawodow = finansowanie.id_zawodow
 GROUP BY  year(zawody.data_rozpoczecia)
 ORDER BY year(zawody.data_rozpoczecia);
+
+
+
+SELECT ROUND(AVG(TIMESTAMPDIFF(MONTH, data_urodzenia, data_odejscia)), 0) AS sredni_wiek_miesiace
+FROM chomiki;
+
+
+SELECT 
+    konkurencje.id_konkurencji,
+    sum(zawody.liczba_widzow) AS liczba_uczestnikow
+FROM zawody
+LEFT JOIN rozgrywki
+      ON zawody.id_zawodow = rozgrywki.id_zawodow
+left join konkurencje
+on rozgrywki.id_konkurencji = konkurencje.id_konkurencji
+GROUP by konkurencje.id_konkurencji
+ORDER BY sum(zawody.liczba_widzow) DESC;
+
+select 
+    kategorie.id_kategorii,
+    kategorie.nazwa_kategorii,
+    COUNT(DISTINCT sponsorzy.id_firmy) AS liczba_sponsorow
+from sponsorzy
+left join finansowanie
+on sponsorzy.id_firmy = finansowanie.id_firmy
+left join zawody
+on finansowanie.id_zawodow = zawody.id_zawodow
+LEFT JOIN rozgrywki
+      ON zawody.id_zawodow = rozgrywki.id_zawodow
+left join konkurencje
+on rozgrywki.id_konkurencji = konkurencje.id_konkurencji
+left join kategorie
+on konkurencje.id_kategorii = kategorie.id_kategorii
+GROUP by kategorie.id_kategorii
+
+SELECT 
+    konkurencje.id_konkurencji,
+    COUNT(DISTINCT sponsorzy.id_firmy) AS liczba_sponsorow
+from sponsorzy
+left join finansowanie
+on sponsorzy.id_firmy = finansowanie.id_firmy
+left join zawody
+on finansowanie.id_zawodow = zawody.id_zawodow
+LEFT JOIN rozgrywki
+      ON zawody.id_zawodow = rozgrywki.id_zawodow
+left join konkurencje
+on rozgrywki.id_konkurencji = konkurencje.id_konkurencji
+GROUP by konkurencje.id_konkurencji
+ORDER BY sum(zawody.liczba_widzow) DESC;
