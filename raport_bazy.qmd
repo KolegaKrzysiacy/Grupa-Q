@@ -427,7 +427,7 @@ from uczestnictwo
 left join pojazdy 
 on uczestnictwo.id_pojazdu = pojazdy.id_pojazdu
 left join modele
-on pojazdy.id_modelu = modele.id_model
+on pojazdy.id_modelu = modele.id_modelu
 left join producenci
 on modele.id_producenta = producenci.id_producenta
 WHERE producenci.nazwa_producenta IS NOT NULL
@@ -473,5 +473,11 @@ ggplot(df13, aes(x = nazwa_rasy, y = miejsce)) +
   ) +
   theme_classic() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r, echo=FALSE}
+#Zamknięcie połączenia
+dbDisconnect(con)
 
 ```
