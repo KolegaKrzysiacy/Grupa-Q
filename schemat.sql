@@ -74,11 +74,11 @@ CREATE TABLE koszty_zawodow
 
 CREATE TABLE modele
 (
-  id_model      SMALLINT      NOT NULL AUTO_INCREMENT,
+  id_modelu     SMALLINT      NOT NULL AUTO_INCREMENT,
   id_producenta SMALLINT      NOT NULL,
   nazwa_modelu  VARCHAR(30)   NOT NULL COMMENT 'DODAJ TYPY ITD',
   cena_modelu   DECIMAL(10,2) NOT NULL COMMENT 'cena w zł, żeby w analize wykorzystać',
-  PRIMARY KEY (id_model)
+  PRIMARY KEY (id_modelu)
 );
 
 CREATE TABLE podloza
@@ -340,7 +340,7 @@ ALTER TABLE finansowanie
 ALTER TABLE pojazdy
   ADD CONSTRAINT FK_modele_TO_pojazdy
     FOREIGN KEY (id_modelu)
-    REFERENCES modele (id_model);
+    REFERENCES modele (id_modelu);
 
 ALTER TABLE koszty_zawodow
   ADD CONSTRAINT FK_zawody_TO_koszty_zawodow
