@@ -125,7 +125,7 @@ ORDER BY year(zawody.data_rozpoczecia);
 
 
 
-SELECT ROUND(AVG(TIMESTAMPDIFF(MONTH, data_urodzenia, data_odejscia)), 0) AS sredni_wiek_miesiace
+SELECT ROUND(AVG(TIMESTAMPDIFF(MONTH, data_dolaczenia, data_odejscia)), 0) AS sredni_wiek_miesiace
 FROM chomiki;
 
 
@@ -171,3 +171,61 @@ left join konkurencje
 on rozgrywki.id_konkurencji = konkurencje.id_konkurencji
 GROUP by konkurencje.id_konkurencji
 ORDER BY sum(zawody.liczba_widzow) DESC;
+
+
+select wlasciciele.zodiak_wlasciciela, avg(uczestnictwo.miejsce)
+from uczestnictwo
+left join chomiki
+on uczestnictwo.id_chomika = chomiki.id_chomika
+left join wlasciciele
+on chomiki.id_wlasciciela = wlasciciele.id_wlasciciela
+GROUP by wlasciciele.zodiak_wlasciciela
+
+select wlasciciele.zodiak_wlasciciela, uczestnictwo.miejsce
+from uczestnictwo
+left join chomiki
+on uczestnictwo.id_chomika = chomiki.id_chomika
+left join wlasciciele
+on chomiki.id_wlasciciela = wlasciciele.id_wlasciciela
+order by wlasciciele.zodiak_wlasciciela
+
+select producenci.nazwa_producenta, uczestnictwo.miejsce
+from uczestnictwo
+left join pojazdy 
+on uczestnictwo.id_pojazdu = pojazdy.id_pojazdu
+left join modele
+on pojazdy.id_modelu = modele.id_model
+left join producenci
+on modele.id_producenta = producenci.id_producenta
+WHERE producenci.nazwa_producenta IS NOT NULL
+order by producenci.nazwa_producenta;
+
+select kontrola_substancji.wynik_testu
+from chomiki
+left join kontrole_antydopingowe
+on chomiki.id_chomika = kontrole_antydopingowe.id_chomika
+left join kontrola_substancji
+on kontrole_antydopingowe.id_kontroli = kontrola_substancji.id_kontroli
+where wynik_testu = "1"
+order by wynik_testu
+
+
+select substancje.nazwa_substancji, avg(uczestnictwo.miejsce)
+from uczestnictwo
+left join chomiki
+on uczestnictwo.id_chomika = chomiki.id_chomika
+left join kontrole_antydopingowe
+on chomiki.id_chomika = kontrole_antydopingowe.id_chomika
+left join kontrola_substancji
+on kontrole_antydopingowe.id_kontroli = kontrola_substancji.id_kontroli
+left join substancje
+on kontrola_substancji.id_substancji = substancje.id_substancji
+GROUP by substancje.id_substancji
+
+select rasy.nazwa_rasy, uczestnictwo.miejsce
+from uczestnictwo
+left join chomiki
+on uczestnictwo.id_chomika = chomiki.id_chomika
+left join rasy 
+on chomiki.id_rasy = chomiki.id_rasy
+order by rasy.id_rasy
