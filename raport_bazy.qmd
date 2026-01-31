@@ -1,6 +1,11 @@
 ---
 title: "Raport"
-author: "myszeczki"
+author:
+  - Magdalena Dworzańska
+  - Krzysztof Konduła
+  - Emilia Porczyńska
+  - Michał Szostak
+  - Krzysztof Warzecha
 format: 
   pdf:
     number_sections: true
@@ -11,8 +16,6 @@ execute:
   warning: false
   message: false
 ---
-
-\textcolor{red}{TODO: ustawić sekcje, osie wykresów, odnośniki do tabeli/wykresów nie działają}
 
 ```{r, echo=FALSE}
 #wczytanie pakietu potrzebnego do połaczenia
@@ -31,20 +34,20 @@ con <- dbConnect(RMariaDB::MariaDB(),
 
 ## Wstęp
 
-Celem niniejszej analizy jest ocena wyników sportowców oraz zbadanie funkcjonowania zawodów, ze szczególnym uwzględnieniem organizacji dyscyplin i zasad wynagradzania uczestników. W analizie dążymy do wyłonienia najlepszego sportowca oraz identyfikacji czynników wpływających na osiągnięcie najwyższych wyników. Ponadto analiza ma na celu odpowiedź na pytania dotyczące charakterystyki poszczególnych dyscyplin rozgrywanych podczas zawodów, a także sposobu finansowania wydarzenia i systemu wynagradzania uczestników.
+Celem niniejszej analizy jest ocena wyników sportowców oraz zbadanie funkcjonowania zawodów, ze szczególnym uwzględnieniem organizacji dyscyplin. W analizie dążymy do wyłonienia najlepszego sportowca oraz identyfikacji czynników wpływających na osiągnięcie najwyższych wyników. Ponadto analiza ma na celu odpowiedź na pytania dotyczące charakterystyki poszczególnych dyscyplin rozgrywanych podczas zawodów, a także sposobu finansowania wydarzenia.
 
 Analiza została przeprowadzona na podstawie stworzonej bazy danych dla Międzynarodowej Federacji Wyścigów Chomików, która organizuje część Światowej Olimpiady Chomików.
 
 ## Pytania oraz cele badawcze:
 
 1.  Znalezienie najlepszego zawodnika w zależności od kategorii.
-2.  Ile trwa "szczyt kariery" chomika.
-3.  Czy chomiki należące do bogatszych właścicieli osiągają lepsze wyniki dzięki lepszemu sprzętowi?
-4.  Jak zmieniała się liczba uczestników zawodów w kolejnych latach?
-5.  Czy federacja chomikowego sportu jest finansowo rentowna?
-6.  Które kategorie przyciągają najwięcej widzów i sponsorów?
-7.  Czy znak zodiaku właściciela chomika ma wpływ na jego wyniki w zawodach?
-8.  Czy rasa chomika ma wpływa na wynik w zawodach?
+2.  Ile trwa "szczyt kariery" chomika?
+3.  Jak zmieniała się liczba uczestników zawodów w kolejnych latach?
+4.  Czy federacja chomikowego sportu jest finansowo rentowna?
+5.  Które kategorie przyciągają najwięcej widzów i sponsorów?
+6.  Czy znak zodiaku właściciela chomika ma wpływ na jego wyniki w zawodach?
+7.  Czy rasa chomika ma wpływ na wynik w zawodach?
+8.  Czy chomiki należące do bogatszych właścicieli osiągają lepsze wyniki dzięki lepszemu sprzętowi?
 9.  Który chomik jest najbardziej wszechstronny?
 10. Czy waga chomika ma wpływ na jego osiągi?
 11. Czy młodsze chomiki zajmują wyższe miejsca niż starsze?
@@ -58,14 +61,13 @@ Na początku postaramy się znaleźć najlepszych zawodników w danych kategoria
 
 Chomiki mogą uczestniczyć w zawodach w dwóch głównych kategoriach. Pierwsza to kategoria naturalna, w której zwierzęta biegają bezpośrednio po torze wyścigowym lub pokonują przeszkody, takie jak sprinty, maratony czy skoki przez płotki. W tej formule chomik musi utrzymywać kontakt z podłożem lub przeszkodami wyłącznie za pomocą łapek lub odpowiedniego obuwia.
 
-Druga kategoria to formuła CH, w której chomik uczestniczy w zawodach, prowadząc miniaturowy pojazd napędzany kołowrotkiem do biegania. Takie pojazdy są specjalnie skonstruowane dla zwierząt i umożliwiają rywalizację w zawodach w alternatywny sposób, zachowując element wysiłku fizycznego. Obie kategorie zapewniają różnorodność konkurencji i umożliwiają ocenę zdolności chomików w różnych formach aktywności.
+Druga kategoria to formuła Ch, w której chomik uczestniczy w zawodach, prowadząc miniaturowy pojazd napędzany kołowrotkiem do biegania. Takie pojazdy są specjalnie skonstruowane dla zwierząt i umożliwiają rywalizację w zawodach w alternatywny sposób, zachowując element wysiłku fizycznego. Obie kategorie zapewniają różnorodność konkurencji i umożliwiają ocenę zdolności chomików w różnych formach aktywności.
 
 ```{r, echo=FALSE}
 
-q3 <- "SELECT kategorie.id_kategorii,
-       kategorie.nazwa_kategorii AS nazwa_kat,
-       chomiki.imie_chomika AS nazwa_chomika,
-       count(chomiki.id_chomika) as liczba_zwycięstw
+q3 <- "SELECT kategorie.nazwa_kategorii AS `Nazwa kategorii`,
+       chomiki.imie_chomika AS `Imię chomika`,
+       count(chomiki.id_chomika) as `Liczba zwycięstw`
 FROM kategorie 
 JOIN konkurencje  ON kategorie.id_kategorii = konkurencje.id_kategorii
 JOIN rozgrywki  ON konkurencje.id_konkurencji = rozgrywki.id_konkurencji
@@ -78,9 +80,8 @@ limit 2;"
 
 df3 <- dbGetQuery(con, q3)
 
-q33 <- "SELECT kategorie.id_kategorii,
-       kategorie.nazwa_kategorii AS nazwa_kat,
-       count(chomiki.id_chomika) as łączna_liczba_zwycięstw
+q33 <- "SELECT kategorie.nazwa_kategorii AS `Nazwa kategorii`,
+       count(chomiki.id_chomika) as `Łączna liczba zwycięstw`
 FROM kategorie 
 JOIN konkurencje  ON kategorie.id_kategorii = konkurencje.id_kategorii
 JOIN rozgrywki  ON konkurencje.id_konkurencji = rozgrywki.id_konkurencji
@@ -92,11 +93,9 @@ ORDER BY count(chomiki.id_chomika) desc
 limit 2;"
 
 df33 <- dbGetQuery(con, q33)
-
-
 ```
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
+```{r tbl-1, echo=FALSE, warning=FALSE, message=FALSE}
 library(kableExtra)
 tabela <- df3
 kable(
@@ -110,7 +109,7 @@ kable(
   )
 ```
 
-```{r, echo=FALSE}
+```{r tbl-2, echo=FALSE}
 tabela <- df33
 kable(
   tabela,
@@ -123,7 +122,7 @@ kable(
   )
 ```
 
-Tabeli 1 zawiera infomacje o chomikach, które wygrały najwięcej razy w danej kategorii. W kategorii o nazwie `r df3[1,2]` chomik o imieniu `r df3[1, 3]` wygrał aż `r df3[1,4]` razy. Natomiast w kategorii o nazwie `r df3[2,2]` chomik o imieniu `r df3[2, 3]` wygrał już tylko `r df3[2,4]` razy. Dla porównania, w Tabeli 2 w kolumnie `r colnames(df33)[3]` możemy zauważyć łączną liczbę zwycięstw w danej kategorii, wartości te świadczą o dużej zmienności wygrywających chomików w każdej z kategorii.
+Tabela [-@tbl-1] zawiera infomacje o chomikach, które wygrały najwięcej razy w danej kategorii. W kategorii o nazwie "`r df3[1,1]`" chomik o imieniu `r df3[1, 2]` wygrał aż `r df3[1,3]` razy. Natomiast w kategorii o nazwie "`r df3[2,1]`" chomik o imieniu `r df3[2, 2]` wygrał już tylko `r df3[2,3]` razy. Dla porównania, w tabeli [-@tbl-2] w kolumnie "`r colnames(df33)[2]`" możemy zauważyć łączną liczbę zwycięstw w danej kategorii, wartości te świadczą o dużej zmienności wygrywających chomików w każdej z kategorii.
 
 ```{r, echo=FALSE}
 q_kar <- "SELECT ROUND(AVG(TIMESTAMPDIFF(MONTH, data_dolaczenia, data_odejscia)), 0) AS sredni_wiek_miesiace
@@ -175,8 +174,8 @@ Analiza danych wykazała, że średni czas „szczytu kariery” chomików wynos
 Wyniki sugerują, że okres maksymalnej wydajności jest stosunkowo ograniczony, a częste organizowanie zawodów pozwala w pełni wykorzystać potencjał chomików w tym czasie.
 
 ```{r, echo=FALSE}
-df_polaczone <- data.frame(Czas_udziału_w_zawodach = qf_kar$sredni_wiek_miesiace, 
-                  Mediana = med, Średnia = df4$srednia_roznica_miesiecy)
+df_polaczone <- data.frame(`Czas udziału w zawodach` = qf_kar$sredni_wiek_miesiace, 
+                  Mediana = med, Średnia = df4$srednia_roznica_miesiecy, check.names = FALSE)
 ```
 
 ```{r, echo=FALSE}
@@ -184,7 +183,7 @@ tabela <- df_polaczone
 kable(
   tabela,
   booktabs = TRUE,
-  caption = "Średni czas udziału w zawodach oraz średnia i mediana miesięcy w szczycie kariery"
+  caption = "Średni czas udziału w zawodach oraz mediana i średnia miesięcy w szczycie kariery"
 ) |>
   kable_styling(
     latex_options = c("hold_position", "striped"),  # trzyma tabelę w miejscu + paski
@@ -213,7 +212,7 @@ Następnie sprawdzimy, jak zmieniała się liczba uczestników zawodów w kolejn
 
 \vspace{0.7cm}
 
-```{r, echo=FALSE, fig.cap="Wykres liczby uczestników w danym roku"}
+```{r fig-1, echo=FALSE, fig.cap="Wykres liczby uczestników w danym roku"}
 library(dplyr)
 library(ggplot2)
 
@@ -221,7 +220,6 @@ ggplot(df5, aes(x = rok, y = liczba_uczestnikow)) +
   geom_point(color="deeppink2",size = 3) +
     scale_x_continuous(breaks = 2018:2025, limits = c(2018, 2025)) +
   labs(
-    title = "Liczba uczestników zawodów w kolejnych latach",
     x = "Rok",
     y = "Liczba uczestników"
   ) +
@@ -232,7 +230,7 @@ ggplot(df5, aes(x = rok, y = liczba_uczestnikow)) +
   axis.title = element_text(size = 12))
 ```
 
-Powyższy wykres przedstawia liczbę chomików uczestniczących w zawodach w poszczególnych latach. Widoczna jest wyraźna tendencja wzrostowa do roku 2020, a następnie ponownie od roku 2024. W okresie pomiędzy 2020 a 2024 rokiem liczba uczestników pozostawała na zbliżonym poziomie. Może to sugerować wpływ czynników zewnętrznych, takich jak pandemia COVID-19, która mogła ograniczyć organizację zawodów lub udział w nich.
+Rysunek [-@fig-1] przedstawia liczbę chomików uczestniczących w zawodach w poszczególnych latach. Widoczna jest wyraźna tendencja wzrostowa do roku 2020, a następnie ponownie od roku 2024. W okresie pomiędzy 2020 a 2024 rokiem liczba uczestników pozostawała na zbliżonym poziomie. Może to sugerować wpływ czynników zewnętrznych, takich jak pandemia COVID-19, która mogła ograniczyć organizację zawodów lub udział w nich.
 
 ```{r, echo=FALSE}
 q6 <- "select round(avg(rentownosc_procent),2) as Rentowność from(
@@ -251,7 +249,7 @@ GROUP BY koszty_zawodow.id_zawodow
 df6 <- dbGetQuery(con, q6)
 ```
 
-### Federacja chmiczego sportu a rentowność
+### Federacja chomiczego sportu a rentowność
 
 Rentowność określa stopień opłacalności i została obliczona jako stosunek zysku do poniesionych kosztów, wyrażony w procentach. Zysk wyznaczono jako różnicę pomiędzy otrzymanym finansowaniem a kosztami organizacji zawodów. Dodatnia wartość rentowności oznacza, że wydarzenia generowały nadwyżkę finansową, natomiast wartość ujemna wskazuje na stratę.
 
@@ -261,7 +259,7 @@ $$
 R = \frac{przychody - koszty}{koszty} \cdot 100 \%.
 $$
 
-W analizowanych danych otrzymaliśmy rentownosć w wysokosci `r df6$Rentowność`. Oznacza to, że organizowane zawody otrzymują wysokie dofinansowania w stosunku do wydatków. Dzięki temu federacja może przeznaczać nadwyżkę na dalszy rozwój, miedzy innymi inwestować w nowe konkurencje czy organizację zawodów na wiekszą skalę, co może przyciągać większą liczbę widzów oraz właścicieli chomików.
+W analizowanych danych otrzymaliśmy rentowność w wysokości `r df6$Rentowność`%. Oznacza to, że organizowane zawody otrzymują wysokie dofinansowania w stosunku do wydatków. Dzięki temu federacja może przeznaczać nadwyżkę na dalszy rozwój, miedzy innymi inwestować w nowe konkurencje czy organizację zawodów na wiekszą skalę, co może przyciągać większą liczbę widzów oraz właścicieli chomików.
 
 ```{r, echo=FALSE}
 q7 <- "select year(zawody.data_rozpoczecia) as Rok, sum(finansowanie.kwota) - sum(koszty_zawodow.kwota) as przychod 
@@ -276,16 +274,15 @@ ORDER BY year(zawody.data_rozpoczecia);"
 df7 <- dbGetQuery(con, q7)
 ```
 
-```{r, echo=FALSE, fig.cap="Wykres przychodów w danym roku"}
+```{r fig-2, echo=FALSE, fig.cap="Wykres przychodów w danym roku"}
 library(scales)
 ggplot(df7, aes(x = Rok, y = przychod)) +
   geom_point(color="deeppink2",size = 3) +  
     scale_x_continuous(breaks = 2018:2025, limits = c(2018, 2025)) +
     scale_y_continuous(labels = label_number(scale = 1e-5)) +
   labs(
-    title = "Przychód z zawodów w kolejnych latach",
     x = "Rok",
-    y = "Przychód (×10^5)"
+    y = "Przychód (×10^5 PLN)"
   ) +
   theme_classic()  +
   theme(
@@ -294,15 +291,14 @@ ggplot(df7, aes(x = Rok, y = przychod)) +
   axis.title = element_text(size = 12))
 ```
 
-Powyższy wykres przedstawia wysokość przychodu z zawodów w kolejnych latach. Można zauważyć dużą zmienność finansową na przestrzeni lat. Największy przychód został odnotowany w 2023, gdzie wyniósł ponad $120 \cdot 10^5$. Natomiast po roku 2024 przychody ustabilizowały się i można przypuszczać, że federacja osiągnęła względnie stały poziom wpływów finansowych. Pomimo rekordowej frekwencji zawodów w 2025 przychody nie wzrosły istotnie, co może sugerować zmianę strategii federacji, na przykład większe inwestycje w organizację wydarzeń. Warto podkreślić, że w żadnym z analizowanych lat przychód nie spadł poniżej $40 \cdot 10^5$, co swiadczy o śwetnym funkcjonowaniu finansowym zawodów.
+Rysunek [-@fig-2] przedstawia wysokość przychodu z zawodów w kolejnych latach. Można zauważyć dużą zmienność finansową na przestrzeni lat. Największy przychód został odnotowany w 2023, gdzie wyniósł ponad $120 \cdot 10^5$ złotych. Natomiast po roku 2024 przychody ustabilizowały się i można przypuszczać, że federacja osiągnęła względnie stały poziom wpływów finansowych. Pomimo rekordowej frekwencji zawodów w 2025 przychody nie wzrosły istotnie, co może sugerować zmianę strategii federacji, na przykład większe inwestycje w organizację wydarzeń. Warto podkreślić, że w żadnym z analizowanych lat przychód nie spadł poniżej $40 \cdot 10^5$ złotych, co świadczy o świetnym funkcjonowaniu finansowym zawodów.
 
 ### Najbardziej popularne kategorie dla widzów i sponsorów
 
 ```{r, echo=FALSE}
 q8 <- "SELECT 
-    kategorie.id_kategorii,
-      kategorie.nazwa_kategorii as nazwa_kategorii,
-    sum(zawody.liczba_widzow) AS liczba_widzow
+      kategorie.nazwa_kategorii as `Nazwa kategorii`,
+    sum(zawody.liczba_widzow) AS `Liczba widzów`
 FROM zawody
 LEFT JOIN rozgrywki
       ON zawody.id_zawodow = rozgrywki.id_zawodow
@@ -316,13 +312,12 @@ ORDER BY kategorie.id_kategorii ASC;"
 df8 <- dbGetQuery(con, q8)
 ```
 
-Następnie dowiemy się które kategorie przyciągają największą liczbę widzów i sponsorów. W tabeli poniżej można zauważyć, że kategoria `r df8[1,2]` cieszy się najwiekszą oglądalnością, jednak kategoria `r df8[2,2]` osiągnęła bardzo zbliżony wynik, co świadczy o porównywalnej popularnosci obu kategorii wśród widzów.
+Następnie dowiemy się, które kategorie przyciągają największą liczbę widzów i sponsorów. W tabeli [-@tbl-3] można zauważyć, że kategoria `r df8[1,1]` cieszy się najwiekszą oglądalnością, jednak kategoria `r df8[2,1]` osiągnęła bardzo zbliżony wynik, co świadczy o porównywalnej popularności obu kategorii wśród widzów.
 
 ```{r, echo=FALSE}
 q9 <- "select 
-    kategorie.id_kategorii,
-    kategorie.nazwa_kategorii,
-    COUNT(DISTINCT sponsorzy.id_firmy) AS liczba_sponsorow
+    kategorie.nazwa_kategorii AS `Nazwa kategorii`,
+    COUNT(DISTINCT sponsorzy.id_firmy) AS `Liczba sponsorów`
 from sponsorzy
 left join finansowanie
 on sponsorzy.id_firmy = finansowanie.id_firmy
@@ -340,12 +335,12 @@ df9 <- dbGetQuery(con, q9)
 
 ```
 
-```{r, echo=FALSE}
+```{r tbl-3, echo=FALSE}
 tabela <- df8
 kable(
   tabela,
   booktabs = TRUE,
-  caption = "Liczba widzow dla poszczególnych kategorii",
+  caption = "Liczba widzów dla poszczególnych kategorii",
     label = "tab:3"
 ) |>
   kable_styling(
@@ -354,9 +349,9 @@ kable(
   )
 ```
 
-Natomiast w tabeli umieszczonej poniżej można zauważyć, że liczba sponsorów dla obu kategorii jest identyczna i wynosi `r df9[1,3]`. Świadczy to o porównywalnym zainteresowaniu sponsorów obiema formami rywalizacji, co sugeruje, że zarówno kategoria `r df9[1,2]`, jak i `r df9[2,2]` są równie atrakcyjne z punktu widzenia wsparcia finansowego.
+Natomiast w tabeli [-@tbl-4] można zauważyć, że liczba sponsorów dla obu kategorii jest identyczna i wynosi `r df9[1,2]`. Świadczy to o porównywalnym zainteresowaniu sponsorów obiema formami rywalizacji, co sugeruje, że zarówno kategoria `r df9[1,1]`, jak i `r df9[2,1]` są równie atrakcyjne z punktu widzenia wsparcia finansowego.
 
-```{r, echo=FALSE}
+```{r tbl-4, echo=FALSE}
 tabela <- df9
 kable(
   tabela,
@@ -372,10 +367,10 @@ kable(
 
 ### Znak zodiaku właściciela a osiągnięcia chomika
 
-W celu sprawdzenia, czy znak zodiaku właściciela może mieć wpływ na wyniki chomików, przeprowadzono analizę zajmowanych przez chomiki miejsc w zawodach w podziale na znaki zodiaku ich właścicieli, którą zaprezentowano na poniższej tabeli.
+W celu sprawdzenia, czy znak zodiaku właściciela może mieć wpływ na wyniki chomików, przeprowadzono analizę zajmowanych przez chomiki miejsc w zawodach w podziale na znaki zodiaku ich właścicieli, którą zaprezentowano na tabeli [-@tbl-5].
 
 ```{r, echo=FALSE}
-q11 <- "select wlasciciele.zodiak_wlasciciela, avg(uczestnictwo.miejsce) as średnia_miejsc
+q11 <- "select wlasciciele.zodiak_wlasciciela AS `Znak zodiaku`, ROUND(avg(uczestnictwo.miejsce), 2) as `Średnia miejsc`
 from uczestnictwo
 left join chomiki
 on uczestnictwo.id_chomika = chomiki.id_chomika
@@ -386,12 +381,12 @@ GROUP by wlasciciele.zodiak_wlasciciela"
 df11 <- dbGetQuery(con, q11)
 ```
 
-```{r, echo=FALSE}
+```{r tbl-5, echo=FALSE}
 tabela <- df11
 kable(
   tabela,
   booktabs = TRUE,
-  caption = "Znaki zodiaku włascicieli średnia wyników ich chomików",
+  caption = "Znaki zodiaku właścicieli a średnia wyników ich chomików",
     label = "tab:4"
 ) |>
   kable_styling(
@@ -400,7 +395,7 @@ kable(
   )
 ```
 
-Z powyższej tabeli wynika, że znak zodiaku właściciela nie ma istotnego wpływu na miejsce zajmowane przez ich chomika. Średnie wyników wahają się od `r min(df11$średnia_miejsc, na.rm = TRUE)` do `r max(df11$średnia_miejsc, na.rm = TRUE)`, co sugeruje niewielkie zróżnicowanie wyników pomiędzy poszczególnymi znakami zodiaku właścicieli.
+Wynika z niej, że znak zodiaku właściciela nie ma istotnego wpływu na miejsce zajmowane przez ich chomika. Średnie wyników wahają się od `r min(df11[["Średnia miejsc"]], na.rm = TRUE)` do `r max(df11[["Średnia miejsc"]], na.rm = TRUE)`, co sugeruje niewielkie zróżnicowanie wyników pomiędzy poszczególnymi znakami zodiaku właścicieli.
 
 ### Rasa chomika a wyniki w zawodach
 
@@ -418,11 +413,10 @@ order by rasy.id_rasy"
 df13 <- dbGetQuery(con, q13)
 ```
 
-```{r, echo=FALSE}
+```{r fig-3, echo=FALSE, fig.cap="Miejsca chomików według rasy"}
 ggplot(df13, aes(x = Rasa, y = miejsce, fill=Rasa)) +
   geom_boxplot(alpha = 0.7) +
   labs(
-    title = "Nazwa producenta i miejsca",
     x = "Rasa chomika",
     y = "Miejsce",
   ) +
@@ -430,7 +424,7 @@ ggplot(df13, aes(x = Rasa, y = miejsce, fill=Rasa)) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-Na powyższym wykresie można zauważyć brak istotnych różnic między rasami. Dla każdej z badanych ras mediana zajmowanych miejsc wynosi około 50. Rozkład międzykwartylowy jest podobny dla wszystkich kategorii, co sugeruje, że przynależność do konkretnej rasy nie wpływa na sukcesu w zawodach. Na wykresie widać również liczne obserwacje odstające powyżej 150 miejsca, co swiadczy o dużej liczbie uczestników zajmujących dalsze pozycje w każdej z ras.
+Na rysunku [-@fig-3] można zauważyć brak istotnych różnic między rasami. Dla każdej z badanych ras mediana zajmowanych miejsc wynosi około 50. Rozkład międzykwartylowy jest podobny dla wszystkich kategorii, co sugeruje, że przynależność do konkretnej rasy nie wpływa na sukces w zawodach. Na rysunku widać również liczne obserwacje odstające powyżej 150 miejsca, co świadczy o dużej liczbie uczestników zajmujących dalsze pozycje w każdej z ras.
 
 ### Czy droższy sprzęt zapewnia przewagę?
 
@@ -446,11 +440,11 @@ ORDER BY procent_podium, cena_modelu;"
 df14 <- dbGetQuery(con, q14)
 ```
 
-```{r, echo=FALSE, fig.cap="Zależność między ceną pojazdu a wynikami chomików"}
+```{r fig-4, echo=FALSE, fig.cap="Zależność między ceną pojazdu a wynikami chomików"}
 ggplot(df14, aes(x=cena_modelu, y=procent_podium)) + geom_point() + xlab("Cena modelu (w PLN)") + ylab("Procent wystąpień na podium") + geom_smooth(method = "lm", color="red")
 ```
 
-Na wykresie widać, że wraz ze wzrostem ceny pojazdu możemy zaobserwować lekki wzrost reprezentacji na podium, aczkolwiek przy tym zakresie (`r round(min(df14$procent_podium), 2)`%-`r round(max(df14$procent_podium), 2)`%) różnice są bardzo małe i nie można na ich podstawie wnioskować o istotnej zależności.
+Na rysunku [-@fig-4] widać, że wraz ze wzrostem ceny pojazdu możemy zaobserwować lekki wzrost reprezentacji na podium, aczkolwiek przy tym zakresie (`r round(min(df14$procent_podium), 2)`%-`r round(max(df14$procent_podium), 2)`%) różnice są bardzo małe i nie można na ich podstawie wnioskować o istotnej zależności.
 
 ### Najbardziej wszechstronny chomik
 
@@ -463,7 +457,7 @@ ORDER BY procent_podium DESC;"
 df15 <- dbGetQuery(con, q15)
 ```
 
-Najbardziej wszechstronnym chomikiem jest chomik `r df15$nazwa_rasy[1]` o imieniu *`r df15$imie_chomika[1]`*. Może się pochwalić wskaźnikiem zwycięstw (wystąpień na podium) równym `r round(df15$procent_podium[1]*100, 2)`%. Urodził się `r df15$data_urodzenia[1]`. Okres kariery: `r df15$data_dolaczenia[1]` do `r dplyr::if_else(is.na(df15$data_odejscia[1]), "dzisiaj", as.character(df15$data_odejscia[1]))`. `r ifelse(df15$max_wynik[1]==0, "Nigdy nie odnotowano u niego brania środków dopingujących.", "W przeszłości odnotowano u niego stosowanie środków dopingujących.")`
+Najbardziej wszechstronnym chomikiem jest chomik `r df15$nazwa_rasy[1]` o imieniu `r df15$imie_chomika[1]`. Może się pochwalić wskaźnikiem zwycięstw (wystąpień na podium) równym `r round(df15$procent_podium[1]*100, 2)`%. Urodził się `r df15$data_urodzenia[1]`. Okres kariery: `r df15$data_dolaczenia[1]` do `r dplyr::if_else(is.na(df15$data_odejscia[1]), "dzisiaj", as.character(df15$data_odejscia[1]))`. `r ifelse(df15$max_wynik[1]==0, "Nigdy nie odnotowano u niego brania środków dopingujących.", "W przeszłości odnotowano u niego stosowanie środków dopingujących.")`
 
 ### Zależność osiągów od wagi chomika
 
@@ -513,6 +507,23 @@ ggplot(df18, aes(x=zodiak_wlasciciela, y=waga, fill=zodiak_wlasciciela)) + geom_
 ```
 
 Mediany wagi chomików są prawie identyczne dla każdego znaku zodiaku właściciela. Jedynie wyróżnia się grupa właścicieli będących Koziorożcami - ich chomiki odznaczają się większą zmiennością w wyższych zakresach wagi. Nie znajdziemy wśród nich jednakże wartości odstających.
+
+## Wnioski
+
+### Liczba uczestników
+W okresie 2020-2024 liczba chomików utrzymywała się na stałym poziomie. Mogło to wynikać m.in. z pandemii COVID-19. Poza tym okresem zawody odnotowywały znaczny przyrost liczby zawodników.
+
+### Rentowność
+W analizowanym okresie federacja utrzymywała rentowność na wysokim poziomie wynoszącym `r df6$Rentowność`%.
+
+### Popularność kategorii
+Obie kategorie odznaczają się podobnym zainteresowaniem zarówno wśród widzów, jak i sponsorów.
+
+### Znaku zodiaku właściciela i wpływ na chomika
+Znak zodiaku właściciela nie ma wpływu na osiągi chomika ani na jego wagę.
+
+### Zależność kosztu sprzętu i osiągów
+Koszt sprzętu nie ma wpływu na osiągane przez chomiki wyniki w zawodach.
 
 ```{r, echo=FALSE}
 #Zamknięcie połączenia
