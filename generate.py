@@ -156,7 +156,7 @@ ZODIAKI = [
 ]
 CHCEMY_PRACOWNIKOW = [1] * 35 + [2] * 28 + [3] * 16  # id stanowisk
 
-MALE = [
+FEMALE = [
     "Ada",
     "Alga",
     "Arka",
@@ -511,7 +511,7 @@ MALE = [
     "Zosia",
     "Zelda",
 ]
-FEMALE = [
+MALE = [
     "Anatol",
     "Arsen",
     "Ananas",
