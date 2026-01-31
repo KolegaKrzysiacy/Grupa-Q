@@ -93,7 +93,7 @@ limit 2;"
 
 df33 <- dbGetQuery(con, q33)
 
-df3$łączna_liczba_zwycięstw <- df33$łączna_liczba_zwycięstw
+
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
@@ -102,7 +102,7 @@ tabela <- df3
 kable(
   tabela,
   booktabs = TRUE,
-  caption = "Najlepsze chomiki w danej kategorii"
+  caption = "Najlepszy chomik w danej kategorii"
 ) |>
   kable_styling(
     latex_options = c("hold_position", "striped"),  # trzyma tabelę w miejscu + paski
@@ -110,7 +110,20 @@ kable(
   )
 ```
 
-Powyższa tabela przedstwia chomiki, które wygrały najwięcej razy w danej kategorii. W kategorii o nazwie `r df3[1,2]` chomik o imieniu `r df3[1, 3]` wygrał aż `r df3[1,4]` razy. Natomiast w kategorii o nazwie `r df3[2,2]` chomik o imieniu `r df3[2, 3]` wygrał już tylko `r df3[2,4]` razy. Dla porównania, w kolumnie `r colnames(df3)[5]` możemy zauważyć łączną liczbę zwycięstw w danej kategorii, co świadczy o dużej zmienności wygrywających chomików w każdej z kategorii.
+```{r, echo=FALSE}
+tabela <- df33
+kable(
+  tabela,
+  booktabs = TRUE,
+  caption = "Liczba zwycięstw w danej kategorii"
+) |>
+  kable_styling(
+    latex_options = c("hold_position", "striped"),  # trzyma tabelę w miejscu + paski
+    full_width = FALSE
+  )
+```
+
+Tabeli 1 zawiera infomacje o chomikach, które wygrały najwięcej razy w danej kategorii. W kategorii o nazwie `r df3[1,2]` chomik o imieniu `r df3[1, 3]` wygrał aż `r df3[1,4]` razy. Natomiast w kategorii o nazwie `r df3[2,2]` chomik o imieniu `r df3[2, 3]` wygrał już tylko `r df3[2,4]` razy. Dla porównania, w Tabeli 2 w kolumnie `r colnames(df33)[3]` możemy zauważyć łączną liczbę zwycięstw w danej kategorii, wartości te świadczą o dużej zmienności wygrywających chomików w każdej z kategorii.
 
 ```{r, echo=FALSE}
 q_kar <- "SELECT ROUND(AVG(TIMESTAMPDIFF(MONTH, data_dolaczenia, data_odejscia)), 0) AS sredni_wiek_miesiace
@@ -155,24 +168,23 @@ df4 <- dbGetQuery(con, q4)
 
 ### "Szczyt kariery" chomika
 
-„Szczyt kariery”, według autorów raportu, jest to różnica pomiędzy najwcześniejszą a najpóźniejszą datą uzyskania przez danego chomika miejsc od 1 do 6, wyrażona w miesiącach. Następnie otrzymane wartości są uśredniane dla wszystkich zawodników, co pozwala określić przeciętny okres osiągania najwyższej sportowej formy.
+„Szczyt kariery”, według autorów raportu, jest to różnica pomiędzy najwcześniejszą a najpóźniejszą datą uzyskania przez danego chomika miejsc od 1 do 6, wyrażona w miesiącach. Następnie otrzymane wartości uśredniono dla wszystkich zawodników, co pozwala określić przeciętny okres osiągania najwyższej sportowej formy.
 
-Analiza danych wykazała, że średni czas „szczytu kariery” chomików wynosi około `r df4$srednia_roznica_miesiecy` miesiąca, natomiast mediana miesięcy, w których chomiki osiągały wysokie wyniki, wynosi `r med`. Średni czas aktywnego udziału chomików w zawodach wynosi około `r qf_kar$sredni_wiek_miesiace` miesięcy, co wskazuje, że okres najlepszych rezultatów obejmuje znaczną część ich kariery sportowej. Dla porównania, średni czas życia chomika wynosi `r qf_zycie$sredni_wiek_miesiace` miesięcy. Oznacza to, że chomiki osiągają swoje najlepsze wyniki w stosunkowo krótkim okresie życia.
+Analiza danych wykazała, że średni czas „szczytu kariery” chomików wynosi około `r df4$srednia_roznica_miesiecy` miesiąca, natomiast mediana miesięcy, w których chomiki osiągały wysokie wyniki, wynosi `r med`. Średni czas udziału chomików w zawodach wynosi około `r qf_kar$sredni_wiek_miesiace` miesięcy, co wskazuje, że okres najlepszych rezultatów obejmuje znaczną część ich kariery sportowej.
 
-Wyniki te sugerują, że okres maksymalnej wydajności jest ograniczony, a częste organizowanie zawodów pozwala w pełni wykorzystać potencjał chomików w tym czasie.
+Wyniki sugerują, że okres maksymalnej wydajności jest stosunkowo ograniczony, a częste organizowanie zawodów pozwala w pełni wykorzystać potencjał chomików w tym czasie.
 
 ```{r, echo=FALSE}
-df_polaczone <- data.frame(Średnia_dł_zycia = qf_zycie$sredni_wiek_miesiace, Czas_udziału_w_zawodach = qf_kar$sredni_wiek_miesiace, 
+df_polaczone <- data.frame(Czas_udziału_w_zawodach = qf_kar$sredni_wiek_miesiace, 
                   Mediana = med, Średnia = df4$srednia_roznica_miesiecy)
 ```
 
 ```{r, echo=FALSE}
-library(kableExtra)
 tabela <- df_polaczone
 kable(
   tabela,
   booktabs = TRUE,
-  caption = "Średni czas życia oraz udziału w zawodach oraz średnia i mediana miesięcy w szczycie kariery"
+  caption = "Średni czas udziału w zawodach oraz średnia i mediana miesięcy w szczycie kariery"
 ) |>
   kable_styling(
     latex_options = c("hold_position", "striped"),  # trzyma tabelę w miejscu + paski
@@ -201,7 +213,7 @@ Następnie sprawdzimy, jak zmieniała się liczba uczestników zawodów w kolejn
 
 \vspace{0.7cm}
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.cap="Wykres liczby uczestników w danym roku"}
 library(dplyr)
 library(ggplot2)
 
@@ -264,16 +276,16 @@ ORDER BY year(zawody.data_rozpoczecia);"
 df7 <- dbGetQuery(con, q7)
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.cap="Wykres przychodów w danym roku"}
 library(scales)
 ggplot(df7, aes(x = Rok, y = przychod)) +
   geom_point(color="deeppink2",size = 3) +  
     scale_x_continuous(breaks = 2018:2025, limits = c(2018, 2025)) +
     scale_y_continuous(labels = label_number(scale = 1e-5)) +
   labs(
-    title = "Przychod z zawodów w kolejnych latach",
+    title = "Przychód z zawodów w kolejnych latach",
     x = "Rok",
-    y = "Przychód (×10⁵)"
+    y = "Przychód (×10^5)"
   ) +
   theme_classic()  +
   theme(
@@ -329,7 +341,6 @@ df9 <- dbGetQuery(con, q9)
 ```
 
 ```{r, echo=FALSE}
-library(kableExtra)
 tabela <- df8
 kable(
   tabela,
@@ -346,7 +357,6 @@ kable(
 Natomiast w tabeli umieszczonej poniżej można zauważyć, że liczba sponsorów dla obu kategorii jest identyczna i wynosi `r df9[1,3]`. Świadczy to o porównywalnym zainteresowaniu sponsorów obiema formami rywalizacji, co sugeruje, że zarówno kategoria `r df9[1,2]`, jak i `r df9[2,2]` są równie atrakcyjne z punktu widzenia wsparcia finansowego.
 
 ```{r, echo=FALSE}
-library(kableExtra)
 tabela <- df9
 kable(
   tabela,
@@ -390,7 +400,7 @@ kable(
   )
 ```
 
-Z powyższej tabeli wynika, że znak zodiaku właściciela nie wpływa istotnie na miejsce zajmowane przez chomika. Średnie pozycje wahają się od `r min(df11$średnia_miejsc, na.rm = TRUE)` do `r max(df11$średnia_miejsc, na.rm = TRUE)`, co wskazuje na niewielki rozstęp wyników.
+Z powyższej tabeli wynika, że znak zodiaku właściciela nie ma istotnego wpływu na miejsce zajmowane przez ich chomika. Średnie wyników wahają się od `r min(df11$średnia_miejsc, na.rm = TRUE)` do `r max(df11$średnia_miejsc, na.rm = TRUE)`, co sugeruje niewielkie zróżnicowanie wyników pomiędzy poszczególnymi znakami zodiaku właścicieli.
 
 ### Rasa chomika a wyniki w zawodach
 
