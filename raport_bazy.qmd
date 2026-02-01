@@ -34,7 +34,7 @@ con <- dbConnect(RMariaDB::MariaDB(),
 
 ## Wstęp
 
-Celem niniejszej analizy jest ocena wyników sportowców oraz zbadanie funkcjonowania zawodów, ze szczególnym uwzględnieniem organizacji dyscyplin. W analizie dążymy do wyłonienia najlepszego sportowca oraz identyfikacji czynników wpływających na osiągnie najwyższych wyników. Ponadto celem jest ocena rentowności federacji.
+Celem niniejszej analizy jest ocena wyników sportowców oraz zbadanie funkcjonowania zawodów, ze szczególnym uwzględnieniem organizacji dyscyplin. W analizie dążymy do wyłonienia najlepszego sportowca oraz identyfikacji czynników wpływających na osiągnięcie najwyższych wyników. Ponadto celem jest ocena rentowności federacji.
 
 Analiza została przeprowadzona na podstawie stworzonej bazy danych dla Międzynarodowej Federacji Wyścigów Chomików, która organizuje część Światowej Olimpiady Chomików.
 
