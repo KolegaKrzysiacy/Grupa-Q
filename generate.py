@@ -895,7 +895,6 @@ ILE_KONTROL = ILE_CHOMIKOW * 4
 ILE_KONKURENCJI = len(KATEGORIE) * len(PODLOZA) * len(DLUGOSCI)
 ILE_ZAWODOW = 100
 CZAS_TRWANIA_ZAWODOW = []
-print(ILE_CHOMIKOW)
 for _ in range(ILE_ZAWODOW):
     CZAS_TRWANIA_ZAWODOW.append(random.randint(1, 3))
 
@@ -1289,7 +1288,7 @@ for id_rozgrywki, (id_zawodow, id_konkurencji, _, _) in enumerate(rozgrywki):
         for chomik_id in jakie_chomiki_bierzemy
     ]
     miejsca = [i + 1 for i, _ in sorted(enumerate(wyniki_chomikow), key=lambda k: k[1])]
-    for i, (id_chomika) in enumerate(jakie_chomiki_bierzemy):
+    for i, (id_chomika) in enumerate(miejsca):
         miejsce = miejsca[i]
         if kategoria == 2:
 
