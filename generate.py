@@ -45,7 +45,7 @@ for x in databases:
 mycursor.execute("SET FOREIGN_KEY_CHECKS=1")
 con.commit()
 
-random.seed(42)  # seed, żeby każdy miał te same dane po generacji
+random.seed(123456)  # seed, żeby każdy miał te same dane po generacji
 Faker.seed(42)  # tak samo tylko do imion
 fake = Faker("pl_PL")  # imiona i nazwiska
 
